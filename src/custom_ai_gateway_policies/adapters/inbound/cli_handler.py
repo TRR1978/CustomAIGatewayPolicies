@@ -23,5 +23,6 @@ def main():
     for r in results:
         print(f"{r.endpoint.name} - {r.policy.__class__.__name__}: {'OK' if r.passed else 'FAIL'}")
 
+
 if __name__ == "__main__":
     main()

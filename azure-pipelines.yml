@@ -26,12 +26,11 @@ steps:
     displayName: 'Run flake8 (PEP8 & naming)'
 
   - script: |
-      pipenv run pytest --cov=src --cov-report=xml --junitxml=test-output.xml
+      pipenv run pytest --cov=src --cov-report=xml --cov-report=html --junitxml=test-output.xml
     displayName: 'Run all tests with pytest and coverage'
 
   - script: |
-      coverage_report=$(pipenv run coverage report --fail-under=90)
-      echo "$coverage_report"
+      pipenv run coverage report --fail-under=90
     displayName: 'Check coverage > 90%'
 
   - script: |
@@ -43,6 +42,20 @@ steps:
     inputs:
       testResultsFiles: 'test-output.xml'
       testRunTitle: 'Pytest Results'
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: 'coverage.xml'
+      reportDirectory: 'htmlcov'
+      failIfCoverageEmpty: true
+    displayName: 'Publish code coverage report'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'coverage.xml'
+      ArtifactName: 'coverage-report'
+      publishLocation: 'Container'
 
   - task: PublishBuildArtifacts@1
     inputs:
