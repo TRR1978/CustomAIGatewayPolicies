@@ -1,20 +1,15 @@
-# Azure Pipelines CI configuration for LakeHouse.CustomAIGatewayPolicies
-# Runs all tests and builds a wheel package
-
 pool:
   vmImage: 'ubuntu-latest'
-steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.11'
-      addToPath: true
+stages:
+
+# Azure Pipelines CI configuration for LakeHouse.CustomAIGatewayPolicies
+# Runs all tests and builds a wheel package
 
 trigger:
   - main
   - master
 
 stages:
-
   - stage: Test
     displayName: 'Test, Lint, and Coverage'
     jobs:
@@ -26,7 +21,6 @@ stages:
           - template: deployment/lint.yml
           - template: deployment/test-coverage.yml
 
-
   - stage: Build
     displayName: 'Build Wheel'
     dependsOn: Test
@@ -37,52 +31,3 @@ stages:
         steps:
           - template: deployment/install-deps.yml
           - template: deployment/build-wheel.yml
-
-  - script: |
-      python -m pip install --upgrade pip
-      pip install pipenv
-      pipenv install --dev
-    displayName: 'Install dependencies with Pipenv'
-
-
-  - script: |
-      pipenv run flake8 src/ --max-line-length=120 --select=E,W,F,N
-    displayName: 'Run flake8 (PEP8 & naming)'
-
-  - script: |
-      pipenv run pytest --cov=src --cov-report=xml --cov-report=html --junitxml=test-output.xml
-    displayName: 'Run all tests with pytest and coverage'
-
-  - script: |
-      pipenv run coverage report --fail-under=90
-    displayName: 'Check coverage > 90%'
-
-  - script: |
-      pipenv run python setup.py bdist_wheel
-    displayName: 'Build wheel package'
-
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: 'test-output.xml'
-      testRunTitle: 'Pytest Results'
-
-  - task: PublishCodeCoverageResults@2
-    inputs:
-      codeCoverageTool: 'Cobertura'
-      summaryFileLocation: 'coverage.xml'
-      reportDirectory: 'htmlcov'
-      failIfCoverageEmpty: true
-    displayName: 'Publish code coverage report'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: 'coverage.xml'
-      ArtifactName: 'coverage-report'
-      publishLocation: 'Container'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: 'dist'
-      ArtifactName: 'wheel'
-      publishLocation: 'Container'
