@@ -14,5 +14,3 @@ steps:
       pipenv install --dev
     displayName: 'Install dependencies with Pipenv'
 
-  - task: WhiteSource Bolt@20
-    displayName: 'WhiteSource Bolt - Security Scan'
