@@ -1,0 +1,13 @@
+{
+  "policy_id": "ai-gateway-foundation-models-policy",
+  "policy_name": "Foundation Models AI Gateway Policy",
+  "description": "Enforces AI Gateway configuration for all Foundation Model endpoints",
+  "version": "1.0",
+  "enabled": true,
+  "ai_gateway": {
+    "enabled": {
+      "value": true,
+      "mode": "enforce"
+    }
+  }
+}

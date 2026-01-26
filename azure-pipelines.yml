@@ -1,0 +1,30 @@
+
+# Azure Pipelines CI configuration for LakeHouse.CustomAIGatewayPolicies
+# Runs all tests and builds a wheel package
+
+trigger:
+  - main
+  - master
+
+stages:
+  - stage: Test
+    displayName: 'Test, Lint, and Coverage'
+    jobs:
+      - job: Test
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - template: deployment/install-deps.yml
+          - template: deployment/lint.yml
+          - template: deployment/test-coverage.yml
+
+  - stage: Build
+    displayName: 'Build Wheel'
+    dependsOn: Test
+    jobs:
+      - job: BuildWheel
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - template: deployment/install-deps.yml
+          - template: deployment/build-wheel.yml

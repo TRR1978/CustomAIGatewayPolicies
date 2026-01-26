@@ -1,0 +1,11 @@
+# Template: Build wheel package
+steps:
+  - script: |
+      pipenv run python setup.py bdist_wheel
+    displayName: 'Build wheel package'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'dist'
+      ArtifactName: 'wheel'
+      publishLocation: 'Container'

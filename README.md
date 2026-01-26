@@ -1,20 +1,54 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# CustomAIGatewayPolicies
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+Emulate Databricks cluster policies for model serving endpoints. This project provides a framework to define, enforce, and manage policies for Databricks model serving endpoints using the Databricks SDK.
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+## Features
+- Policy definition and enforcement for model serving endpoints
+- Integration with Databricks SDK
+- Extensible and configurable
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Getting Started
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+### Usage
+
+
+#### 1. Instala pipenv
+Si no tienes pipenv instalado:
+```sh
+pip install pipenv
+```
+
+#### 2. Instala las dependencias y crea el entorno virtual
+Desde la raíz del proyecto:
+```sh
+pipenv install --dev
+```
+
+#### 3. Activa el entorno virtual
+```sh
+pipenv shell
+```
+
+#### 4. Añade dependencias
+Para dependencias normales:
+```sh
+pipenv install <paquete>
+```
+Para dependencias de desarrollo:
+```sh
+pipenv install --dev <paquete>
+```
+
+#### 5. Ejecuta los tests
+```sh
+pipenv run pytest
+```
+
+---
+See the `example/` folder for usage examples.
+
+## Contributing
+See `CONTRIBUTING.md` for guidelines.
+
+## License
+MIT License. See `LICENSE` for details.
