@@ -1,0 +1,26 @@
+%json
+{
+  "policy_id": "ai-gateway-foundation-models-rate-limit",
+  "policy_name": "Foundation Models Rate Limit Policy",
+  "description": "Enforces rate limits for all Foundation Model endpoints.",
+  "version": "1.0",
+  "enabled": true,
+  "scope": {
+    "model_types": ["foundation_model"]
+  },
+  "ai_gateway": {
+    "rate_limits": {
+      "mode": "enforce",
+      "rules": [
+        {
+          "key": "user",
+          "calls": {
+            "value": 0,
+            "renewal_period": "minute",
+            "mode": "enforce"
+          }
+        }
+      ]
+    }
+  }
+}
