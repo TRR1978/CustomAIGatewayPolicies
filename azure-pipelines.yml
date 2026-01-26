@@ -1,0 +1,51 @@
+# Azure Pipelines CI configuration for LakeHouse.CustomAIGatewayPolicies
+# Runs all tests and builds a wheel package
+
+trigger:
+  - main
+  - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+      addToPath: true
+
+  - script: |
+      python -m pip install --upgrade pip
+      pip install pipenv
+      pipenv install --dev
+    displayName: 'Install dependencies with Pipenv'
+
+
+  - script: |
+      pipenv run flake8 src/ --max-line-length=120 --select=E,W,F,N
+    displayName: 'Run flake8 (PEP8 & naming)'
+
+  - script: |
+      pipenv run pytest --cov=src --cov-report=xml --junitxml=test-output.xml
+    displayName: 'Run all tests with pytest and coverage'
+
+  - script: |
+      coverage_report=$(pipenv run coverage report --fail-under=90)
+      echo "$coverage_report"
+    displayName: 'Check coverage > 90%'
+
+  - script: |
+      pipenv run python setup.py bdist_wheel
+    displayName: 'Build wheel package'
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: 'test-output.xml'
+      testRunTitle: 'Pytest Results'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'dist'
+      ArtifactName: 'wheel'
+      publishLocation: 'Container'

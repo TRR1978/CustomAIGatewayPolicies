@@ -6,8 +6,12 @@ name = "pypi"
 [packages]
 databricks-sdk = ">=0.80.0"
 
+
 [dev-packages]
 pytest = "*"
+pytest-cov = "*"
+flake8 = "*"
+pep8-naming = "*"
 
 [requires]
 python_version = "3.11"
