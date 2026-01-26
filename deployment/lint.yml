@@ -1,0 +1,5 @@
+# Template: Lint with flake8
+steps:
+  - script: |
+      pipenv run flake8 src/ --max-line-length=120 --select=E,W,F,N
+    displayName: 'Run flake8 (PEP8 & naming)'

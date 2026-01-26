@@ -1,18 +1,42 @@
 # Azure Pipelines CI configuration for LakeHouse.CustomAIGatewayPolicies
 # Runs all tests and builds a wheel package
 
-trigger:
-  - main
-  - master
-
 pool:
   vmImage: 'ubuntu-latest'
-
 steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.11'
       addToPath: true
+
+trigger:
+  - main
+  - master
+
+stages:
+
+  - stage: Test
+    displayName: 'Test, Lint, and Coverage'
+    jobs:
+      - job: Test
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - template: deployment/install-deps.yml
+          - template: deployment/lint.yml
+          - template: deployment/test-coverage.yml
+
+
+  - stage: Build
+    displayName: 'Build Wheel'
+    dependsOn: Test
+    jobs:
+      - job: BuildWheel
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - template: deployment/install-deps.yml
+          - template: deployment/build-wheel.yml
 
   - script: |
       python -m pip install --upgrade pip
@@ -43,7 +67,7 @@ steps:
       testResultsFiles: 'test-output.xml'
       testRunTitle: 'Pytest Results'
 
-  - task: PublishCodeCoverageResults@1
+  - task: PublishCodeCoverageResults@2
     inputs:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: 'coverage.xml'

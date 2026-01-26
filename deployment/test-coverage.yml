@@ -1,0 +1,29 @@
+# Template: Run tests and check coverage
+steps:
+  - script: |
+      pipenv run pytest --cov=src --cov-report=xml --cov-report=html --junitxml=test-output.xml
+    displayName: 'Run all tests with pytest and coverage'
+
+  - script: |
+      pipenv run coverage report --fail-under=90
+    displayName: 'Check coverage > 90%'
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: 'test-output.xml'
+      testRunTitle: 'Pytest Results'
+
+  - task: PublishCodeCoverageResults@2
+    inputs:
+      codeCoverageTool: 'Cobertura'
+      summaryFileLocation: 'coverage.xml'
+      reportDirectory: 'htmlcov'
+      failIfCoverageEmpty: true
+    displayName: 'Publish code coverage report'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'coverage.xml'
+      ArtifactName: 'coverage-report'
+      publishLocation: 'Container'
