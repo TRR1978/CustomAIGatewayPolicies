@@ -5,13 +5,14 @@ name = "pypi"
 
 [packages]
 databricks-sdk = ">=0.80.0"
-
+pandas = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
 flake8 = "*"
 pep8-naming = "*"
+shell = "*"
 
 [requires]
 python_version = "3.11"
