@@ -129,7 +129,7 @@ class PolicyManager:
         if not dry_mode and not result.is_compliant:
             logger.info(f"Applying corrections to endpoint {endpoint_name}")
             try:
-                self.adapter.update_endpoint(endpoint_name, result.corrected_config)
+                self.adapter.update_ai_gateway(endpoint_name, result.corrected_config)
                 logger.info(f"Successfully updated endpoint {endpoint_name}")
             except Exception as e:
                 logger.error(f"Failed to update endpoint {endpoint_name}: {e}")
