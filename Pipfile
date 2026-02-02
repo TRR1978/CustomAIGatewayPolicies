@@ -13,6 +13,8 @@ pytest-cov = "*"
 flake8 = "*"
 pep8-naming = "*"
 shell = "*"
+isort = "*"
+black = "*"
 
 [requires]
 python_version = "3.11"
