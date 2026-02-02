@@ -2,9 +2,9 @@
 
 __version__ = "0.1.0"
 
-from ai_gateway_policy_manager.manager import PolicyManager
-from ai_gateway_policy_manager.models.policy import Policy, PolicyRule
-from ai_gateway_policy_manager.models.results import PolicyResult, ValidationError
+from src.custom_ai_gateway_policies.manager import PolicyManager
+from src.custom_ai_gateway_policies.domains.policy import Policy, PolicyRule
+from src.custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
 
 __all__ = [
     "PolicyManager",
