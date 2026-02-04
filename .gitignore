@@ -148,3 +148,4 @@ cython_debug/
 # IDEs
 .idea/
 .DS_Store
+test-output.xml

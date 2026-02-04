@@ -5,7 +5,6 @@ import pandas as pd
 from typing import Dict, Any, List
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.serving import (
-    ServingEndpointDetailed,
     AiGatewayRateLimit,
     AiGatewayRateLimitRenewalPeriod,
     AiGatewayRateLimitKey
@@ -90,21 +89,21 @@ class DatabricksEndpointAdapter:
         try:
             # Extract rate_limits from corrected config
             rate_limits_array = corrected_config.get("ai_gateway", {}).get("rate_limits", [])
-            
+
             if not rate_limits_array:
                 raise ValueError(f"No rate_limits found in corrected_config for {endpoint_name}")
-            
+
             # Convert to SDK objects with proper enums
             rate_limit_objects = []
             for rl in rate_limits_array:
                 # Map renewal_period string to enum
                 renewal_period_str = rl.get("renewal_period", "minute").upper()
                 renewal_period = getattr(
-                    AiGatewayRateLimitRenewalPeriod, 
+                    AiGatewayRateLimitRenewalPeriod,
                     renewal_period_str,
                     AiGatewayRateLimitRenewalPeriod.MINUTE
                 )
-                
+
                 # Map key string to enum
                 key_str = rl.get("key", "user").upper()
                 key_enum = getattr(
@@ -112,32 +111,32 @@ class DatabricksEndpointAdapter:
                     key_str,
                     AiGatewayRateLimitKey.USER
                 )
-                
+
                 # Create rate limit object
                 # Support both 'calls' and 'tokens' limits
                 rate_limit_kwargs = {
                     "renewal_period": renewal_period,
                     "key": key_enum
                 }
-                
+
                 if "calls" in rl:
                     rate_limit_kwargs["calls"] = rl["calls"]
                 if "tokens" in rl:
                     rate_limit_kwargs["tokens"] = rl["tokens"]
-                
+
                 rate_limit_objects.append(AiGatewayRateLimit(**rate_limit_kwargs))
-            
+
             # Update AI Gateway using put_ai_gateway
             self.w.serving_endpoints.put_ai_gateway(
                 name=endpoint_name,
                 rate_limits=rate_limit_objects
             )
-            
+
             logger.info(f"Successfully updated AI Gateway for {endpoint_name}")
-            
+
             # Return updated configuration
             return self.get_serving_endpoint_details(endpoint_name)
-            
+
         except Exception as e:
             logger.error(f"Failed to update AI Gateway for {endpoint_name}: {e}")
             raise
@@ -156,96 +155,10 @@ class DatabricksEndpointAdapter:
         all_endpoints = self.list_endpoints()
 
         # Apply filters (currently only supports name regex)
-        if "name" in filter_dict:            
+        if "name" in filter_dict:
             pattern = filter_dict["name"]
             filtered = all_endpoints[all_endpoints["name"].str.match(pattern)]
             logger.info(f"Filter matched {len(filtered)} endpoints")
             return filtered.to_dict('records')
 
         return all_endpoints.to_dict('records')
-    
-    def update_ai_gateway(
-        self, 
-        endpoint_name: str, 
-        corrected_config: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Update ONLY the AI Gateway configuration using put_ai_gateway.
-        Compatible with Databricks foundation models.
-        
-        Args:
-            endpoint_name: Name of the endpoint to update
-            corrected_config: Complete endpoint config with corrected rate_limits
-        
-        Returns:
-            Updated endpoint configuration dictionary
-        
-        Raises:
-            Exception: If update fails
-        """
-        from databricks.sdk.service.serving import (
-            AiGatewayRateLimit,
-            AiGatewayRateLimitRenewalPeriod,
-            AiGatewayRateLimitKey
-        )
-        
-        logger.info(f"Updating AI Gateway for endpoint: {endpoint_name}")
-        try:
-            has_updates = False
-            # Extract rate_limits from corrected config
-            rate_limits_array = corrected_config.get("ai_gateway", {}).get("rate_limits", [])
-            
-            rate_limit_objects = []
-            if rate_limits_array:
-                for rl in rate_limits_array:
-                    key_str = rl["key"].upper()
-                    renewal_str = rl["renewal_period"].upper()
-                    
-                    # Map string to enum
-                    try:
-                        key_enum = AiGatewayRateLimitKey[key_str]
-                    except KeyError:
-                        key_enum = rl["key"]  # Use string if enum not found
-                    
-                    try:
-                        renewal_enum = AiGatewayRateLimitRenewalPeriod[renewal_str]
-                    except KeyError:
-                        renewal_enum = rl["renewal_period"]  # Use string if enum not found
-                    
-                    # Create rate limit for calls
-                    if "calls" in rl:
-                        rate_limit_objects.append(
-                            AiGatewayRateLimit(
-                                calls=rl["calls"],
-                                renewal_period=renewal_enum,
-                                key=key_enum
-                            )
-                        )
-                    
-                    # Create rate limit for tokens if present
-                    if "tokens" in rl:
-                        rate_limit_objects.append(
-                            AiGatewayRateLimit(
-                                tokens=rl["tokens"],
-                                renewal_period=renewal_enum,
-                                key=key_enum
-                            )
-                        )
-                    # Set has_updates flag
-                    has_updates = True
-            
-            if (has_updates):
-                # Update using put_ai_gateway
-                self.w.serving_endpoints.put_ai_gateway(
-                    name=endpoint_name,
-                    rate_limits=rate_limit_objects
-                )
-            
-            logger.info(f"Successfully updated AI Gateway for {endpoint_name}")
-            
-            # Return updated configuration
-            return self.get_serving_endpoint_details(endpoint_name)
-            
-        except Exception as e:
-            logger.error(f"Failed to update endpoint {endpoint_name}: {e}")
-            raise

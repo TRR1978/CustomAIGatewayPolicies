@@ -15,6 +15,7 @@ pep8-naming = "*"
 shell = "*"
 isort = "*"
 black = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.11"

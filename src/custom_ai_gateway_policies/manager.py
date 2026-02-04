@@ -4,11 +4,11 @@ from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
 import logging
 
-from src.custom_ai_gateway_policies.adapters.databricks_adapter import DatabricksEndpointAdapter
-from src.custom_ai_gateway_policies.core.policy_engine import PolicyEngine
-from src.custom_ai_gateway_policies.core.policy_loader import read_policy, validate_policy_structure
-from src.custom_ai_gateway_policies.core.filters import apply_to_filter, matches_filter
-from src.custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
+from custom_ai_gateway_policies.adapters.databricks_adapter import DatabricksEndpointAdapter
+from custom_ai_gateway_policies.core.policy_engine import PolicyEngine
+from custom_ai_gateway_policies.core.policy_loader import read_policy, validate_policy_structure
+from custom_ai_gateway_policies.core.filters import apply_to_filter, matches_filter
+from custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
 
 logger = logging.getLogger(__name__)
 

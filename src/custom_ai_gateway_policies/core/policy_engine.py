@@ -3,7 +3,7 @@
 from typing import Dict, Tuple, Any, List
 import logging
 
-from src.custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
+from custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
 
 logger = logging.getLogger(__name__)
 
