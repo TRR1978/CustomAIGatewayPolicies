@@ -13,10 +13,10 @@ def read_policy(policy_path: str) -> Dict[str, Any]:
     Read a policy from a JSON file.
 
     Args:
-        policy_path: Path to the policy JSON file
+        policy_path (str): Path to the policy JSON file
 
     Returns:
-        Dictionary containing the policy definition
+        Dict[str, Any]: Dictionary containing the policy definition
 
     Raises:
         FileNotFoundError: If policy file doesn't exist
@@ -49,10 +49,10 @@ def validate_policy_structure(policy: Dict[str, Any]) -> bool:
     Validate that a policy has the required structure.
 
     Args:
-        policy: Policy dictionary to validate
+        policy (Dict[str, Any]): Policy dictionary to validate
 
     Returns:
-        True if valid
+        bool: True if valid
 
     Raises:
         ValueError: If policy structure is invalid
