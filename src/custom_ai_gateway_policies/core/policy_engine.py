@@ -165,6 +165,18 @@ class PolicyEngine:
                 errors=errors
             )
 
+    def _find_rate_limit_entry(self, rate_limits, key_name):
+         # Find the specific rate limit entry by key
+        limit_entry = None
+        limit_index = None
+        for idx, limit in enumerate(rate_limits):
+            if limit.get('key') == key_name:
+                limit_entry = limit
+                limit_index = idx
+                break
+        return limit_entry, limit_index
+
+
     def _apply_rate_limit_rule(
         self,
         policy_key: str,
@@ -186,37 +198,22 @@ class PolicyEngine:
                     key=policy_key,
                     message=f"{error_message} (ai_gateway missing)"
                 ))
-            return
-
+                return
+            
         if 'rate_limits' not in corrected_config['ai_gateway']:
             if rule_type == 'required':
                 errors.append(ValidationError(
                     key=policy_key,
                     message=f"{error_message} (rate_limits missing)"
                 ))
-                if rule_type == 'fixed':
-                    corrected_config['ai_gateway']['rate_limits'] = []
-            return
+                return
 
-        rate_limits = corrected_config['ai_gateway']['rate_limits']
+        if rule_type == 'fixed':
+            corrected_config['ai_gateway']['rate_limits'] = []
 
-        # Check if it's just checking for rate_limits existence
-        if policy_key == 'ai_gateway.rate_limits':
-            if rule_type == 'required' and not rate_limits:
-                errors.append(ValidationError(
-                    key=policy_key,
-                    message=error_message
-                ))
-            return
+        rate_limits = corrected_config['ai_gateway']['rate_limits']       
 
-        # Find the specific rate limit entry by key
-        limit_entry = None
-        limit_index = None
-        for idx, limit in enumerate(rate_limits):
-            if limit.get('key') == key_name:
-                limit_entry = limit
-                limit_index = idx
-                break
+        limit_entry, limit_index = self._find_rate_limit_entry(rate_limits, key_name)
 
         if rule_type == 'required':
             if limit_entry is None:

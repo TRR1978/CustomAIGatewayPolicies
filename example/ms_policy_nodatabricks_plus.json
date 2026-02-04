@@ -10,12 +10,12 @@
      "type": "required",
      "error_message": "El AI Gateway debe estar presente aunque el endpoint esté deshabilitado"
    },
-    "ai_gateway.rate_limit.user.requests_per_minute": {
+    "ai_gateway.rate_limits.user.requests_per_minute": {
      "type": "fixed",
      "default": 0,
      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"
    },
-   "ai_gateway.rate_limit.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper.requests_per_minute": {
+   "ai_gateway.rate_limits.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper.requests_per_minute": {
      "type": "fixed",
      "default": 0,
      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"
