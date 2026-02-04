@@ -191,54 +191,55 @@ class DatabricksEndpointAdapter:
         
         logger.info(f"Updating AI Gateway for endpoint: {endpoint_name}")
         try:
+            has_updates = False
             # Extract rate_limits from corrected config
             rate_limits_array = corrected_config.get("ai_gateway", {}).get("rate_limits", [])
             
-            if not rate_limits_array:
-                raise ValueError("No rate_limits found in corrected_config")
-            
-            # Convert to SDK objects with enums
             rate_limit_objects = []
-            for rl in rate_limits_array:
-                key_str = rl["key"].upper()
-                renewal_str = rl["renewal_period"].upper()
-                
-                # Map string to enum
-                try:
-                    key_enum = AiGatewayRateLimitKey[key_str]
-                except KeyError:
-                    key_enum = rl["key"]  # Use string if enum not found
-                
-                try:
-                    renewal_enum = AiGatewayRateLimitRenewalPeriod[renewal_str]
-                except KeyError:
-                    renewal_enum = rl["renewal_period"]  # Use string if enum not found
-                
-                # Create rate limit for calls
-                if "calls" in rl:
-                    rate_limit_objects.append(
-                        AiGatewayRateLimit(
-                            calls=rl["calls"],
-                            renewal_period=renewal_enum,
-                            key=key_enum
+            if rate_limits_array:
+                for rl in rate_limits_array:
+                    key_str = rl["key"].upper()
+                    renewal_str = rl["renewal_period"].upper()
+                    
+                    # Map string to enum
+                    try:
+                        key_enum = AiGatewayRateLimitKey[key_str]
+                    except KeyError:
+                        key_enum = rl["key"]  # Use string if enum not found
+                    
+                    try:
+                        renewal_enum = AiGatewayRateLimitRenewalPeriod[renewal_str]
+                    except KeyError:
+                        renewal_enum = rl["renewal_period"]  # Use string if enum not found
+                    
+                    # Create rate limit for calls
+                    if "calls" in rl:
+                        rate_limit_objects.append(
+                            AiGatewayRateLimit(
+                                calls=rl["calls"],
+                                renewal_period=renewal_enum,
+                                key=key_enum
+                            )
                         )
-                    )
-                
-                # Create rate limit for tokens if present
-                if "tokens" in rl:
-                    rate_limit_objects.append(
-                        AiGatewayRateLimit(
-                            tokens=rl["tokens"],
-                            renewal_period=renewal_enum,
-                            key=key_enum
+                    
+                    # Create rate limit for tokens if present
+                    if "tokens" in rl:
+                        rate_limit_objects.append(
+                            AiGatewayRateLimit(
+                                tokens=rl["tokens"],
+                                renewal_period=renewal_enum,
+                                key=key_enum
+                            )
                         )
-                    )
+                    # Set has_updates flag
+                    has_updates = True
             
-            # Update using put_ai_gateway
-            self.w.serving_endpoints.put_ai_gateway(
-                name=endpoint_name,
-                rate_limits=rate_limit_objects
-            )
+            if (has_updates):
+                # Update using put_ai_gateway
+                self.w.serving_endpoints.put_ai_gateway(
+                    name=endpoint_name,
+                    rate_limits=rate_limit_objects
+                )
             
             logger.info(f"Successfully updated AI Gateway for {endpoint_name}")
             
