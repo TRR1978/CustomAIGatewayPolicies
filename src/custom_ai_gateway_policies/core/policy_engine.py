@@ -169,7 +169,7 @@ class PolicyEngine:
             )
 
     def _find_rate_limit_entry(self, rate_limits, key_name):
-         # Find the specific rate limit entry by key
+        # Find the specific rate limit entry by key
         limit_entry = None
         limit_index = None
         for idx, limit in enumerate(rate_limits):
@@ -178,7 +178,6 @@ class PolicyEngine:
                 limit_index = idx
                 break
         return limit_entry, limit_index
-
 
     def _apply_rate_limit_rule(
         self,
@@ -216,7 +215,7 @@ class PolicyEngine:
                     message=f"{error_message} (ai_gateway missing)"
                 ))
                 return
-            
+
         if 'rate_limits' not in corrected_config['ai_gateway']:
             if rule_type == 'required':
                 errors.append(ValidationError(
@@ -227,12 +226,12 @@ class PolicyEngine:
             elif rule_type == 'fixed':
                 corrected_config['ai_gateway']['rate_limits'] = []
 
-        rate_limits = corrected_config['ai_gateway']['rate_limits']       
+        rate_limits = corrected_config['ai_gateway']['rate_limits']
 
         limit_entry, limit_index = self._find_rate_limit_entry(rate_limits, key_name)
 
         if limit_entry is None:
-            if rule_type == 'required':            
+            if rule_type == 'required':
                 errors.append(ValidationError(
                     key=policy_key,
                     message=f"{error_message} (key '{key_name}' not found)"

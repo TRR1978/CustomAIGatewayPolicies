@@ -12,11 +12,11 @@ def apply_to_filter(endpoints_df: pd.DataFrame, applies_to: Dict[str, str]) -> p
     Filter endpoints based on policy 'applies_to' criteria.
 
     Args:
-        endpoints_df: DataFrame with endpoint information
-        applies_to: Dictionary with filter criteria (e.g., {"serving_endpoint_name": "^databricks-.*"})
+        endpoints_df (pd.DataFrame): DataFrame with endpoint information
+        applies_to (Dict[str, str]): Dictionary with filter criteria (e.g., {"serving_endpoint_name": "^databricks-.*"})
 
     Returns:
-        Filtered DataFrame
+        pd.DataFrame: Filtered DataFrame
 
     Examples:
         >>> df = pd.DataFrame({"name": ["databricks-gpt", "my-model", "databricks-claude"]})
@@ -53,11 +53,11 @@ def matches_filter(endpoint: Dict[str, Any], applies_to: Dict[str, str]) -> bool
     Check if a single endpoint matches filter criteria.
 
     Args:
-        endpoint: Endpoint dictionary
-        applies_to: Dictionary with filter criteria
+        endpoint (Dict[str, Any]): Endpoint dictionary
+        applies_to (Dict[str, str]): Dictionary with filter criteria
 
     Returns:
-        True if endpoint matches all criteria
+        bool: True if endpoint matches all criteria
 
     Examples:
         >>> endpoint = {"name": "databricks-gpt"}

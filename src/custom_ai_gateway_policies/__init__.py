@@ -1,4 +1,9 @@
-"""AI Gateway Policy Manager for Databricks."""
+
+"""
+AI Gateway Policy Manager for Databricks.
+
+This package provides tools and models for managing AI Gateway policies in Databricks environments.
+"""
 
 __version__ = "0.1.0"
 

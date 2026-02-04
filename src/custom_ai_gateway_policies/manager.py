@@ -25,13 +25,16 @@ class PolicyManager:
         ...     print(f"Found {len(result.errors)} violations")
     """
 
-    def __init__(self, adapter: Optional[DatabricksEndpointAdapter] = None):
+    def __init__(self, adapter: Optional[DatabricksEndpointAdapter] = None) -> None:
         """
         Initialize the PolicyManager.
 
         Args:
-            adapter: Optional DatabricksEndpointAdapter instance. If not provided,
-                    creates a new one with default authentication.
+            adapter (Optional[DatabricksEndpointAdapter]): Optional DatabricksEndpointAdapter instance.
+            If not provided, creates a new one with default authentication.
+
+        Returns:
+            None
         """
         self.adapter = adapter or DatabricksEndpointAdapter()
         self.engine = PolicyEngine()
@@ -42,19 +45,14 @@ class PolicyManager:
         Load a policy from a file or dictionary.
 
         Args:
-            policy_source: Path to JSON file or policy dictionary
+            policy_source (Union[str, Path, Dict[str, Any]]): Path to JSON file or policy dictionary
 
         Returns:
-            Policy dictionary
+            Dict[str, Any]: Policy dictionary
 
         Raises:
             ValueError: If policy structure is invalid
             FileNotFoundError: If policy file doesn't exist
-
-        Examples:
-            >>> manager = PolicyManager()
-            >>> policy = manager.load_policy("policy.json")
-            >>> policy = manager.load_policy({"policy_name": "test", ...})
         """
         if isinstance(policy_source, dict):
             policy = policy_source
@@ -77,20 +75,13 @@ class PolicyManager:
         Apply a policy to a single endpoint.
 
         Args:
-            endpoint_name: Name of the endpoint
-            policy: Policy dictionary (from load_policy)
-            dry_mode: If True, only validate and return corrections without applying.
-                     If False, apply corrections to the actual endpoint.
+            endpoint_name (str): Name of the endpoint
+            policy (Dict[str, Any]): Policy dictionary (from load_policy)
+            dry_mode (bool): If True, only validate and return corrections without applying.
+            If False, apply corrections to the actual endpoint.
 
         Returns:
-            PolicyResult with validation results and corrected configuration
-
-        Examples:
-            >>> manager = PolicyManager()
-            >>> policy = manager.load_policy("policy.json")
-            >>> result = manager.apply_policy("my-endpoint", policy, dry_mode=True)
-            >>> if not result.is_compliant:
-            ...     print("Endpoint does not comply with policy")
+            PolicyResult: Validation results and corrected configuration
         """
         logger.info(f"Applying policy to endpoint: {endpoint_name} (dry_mode={dry_mode})")
 
@@ -154,24 +145,13 @@ class PolicyManager:
         Apply a policy to multiple endpoints matching a filter.
 
         Args:
-            policy: Policy dictionary (from load_policy)
-            filter_dict: Optional filter criteria (e.g., {"name": "^databricks-.*"}).
-                        If None, uses policy's "applies_to" field.
-            dry_mode: If True, only validate without applying corrections
+            policy (Dict[str, Any]): Policy dictionary (from load_policy)
+            filter_dict (Optional[Dict[str, str]]): Optional filter criteria (e.g., {"name": "^databricks-.*"}).
+            If None, uses policy's "applies_to" field.
+            dry_mode (bool): If True, only validate without applying corrections
 
         Returns:
-            List of PolicyResult objects, one per endpoint
-
-        Examples:
-            >>> manager = PolicyManager()
-            >>> policy = manager.load_policy("policy.json")
-            >>> results = manager.apply_policy_bulk(
-            ...     policy,
-            ...     filter_dict={"name": "^databricks-.*"},
-            ...     dry_mode=True
-            ... )
-            >>> compliant = sum(1 for r in results if r.is_compliant)
-            >>> print(f"{compliant}/{len(results)} endpoints compliant")
+            List[PolicyResult]: List of PolicyResult objects, one per endpoint
         """
         # Determine filter
         if filter_dict is None:
@@ -211,15 +191,10 @@ class PolicyManager:
         Generate a compliance report from policy results.
 
         Args:
-            results: List of PolicyResult objects
+            results (List[PolicyResult]): List of PolicyResult objects
 
         Returns:
-            Dictionary with compliance statistics
-
-        Examples:
-            >>> results = manager.apply_policy_bulk(policy, dry_mode=True)
-            >>> report = manager.get_compliance_report(results)
-            >>> print(f"Compliance rate: {report['compliance_rate']:.1%}")
+            Dict[str, Any]: Dictionary with compliance statistics
         """
         total = len(results)
         compliant = sum(1 for r in results if r.is_compliant)

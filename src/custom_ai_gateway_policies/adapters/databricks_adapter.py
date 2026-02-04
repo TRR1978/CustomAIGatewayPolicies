@@ -17,13 +17,16 @@ logger = logging.getLogger(__name__)
 class DatabricksEndpointAdapter:
     """Adapter for interacting with Databricks Model Serving endpoints."""
 
-    def __init__(self, workspace_client: WorkspaceClient = None):
+    def __init__(self, workspace_client: WorkspaceClient = None) -> None:
         """
         Initialize the adapter.
 
         Args:
-            workspace_client: Optional WorkspaceClient instance. If not provided,
-                            will create one using default authentication.
+            workspace_client (WorkspaceClient, optional): Optional WorkspaceClient instance. If not provided,
+            will create one using default authentication.
+
+        Returns:
+            None
         """
         self.w = workspace_client or WorkspaceClient()
         logger.info("DatabricksEndpointAdapter initialized")
@@ -33,7 +36,7 @@ class DatabricksEndpointAdapter:
         List all serving endpoints in the workspace.
 
         Returns:
-            DataFrame with endpoint information
+            pd.DataFrame: DataFrame with endpoint information
         """
         logger.info("Listing all serving endpoints")
         endpoints = self.w.serving_endpoints.list()
@@ -48,10 +51,10 @@ class DatabricksEndpointAdapter:
         Get detailed information about a specific serving endpoint.
 
         Args:
-            endpoint_name: Name of the endpoint
+            endpoint_name (str): Name of the endpoint
 
         Returns:
-            Dictionary with endpoint configuration
+            Dict[str, Any]: Dictionary with endpoint configuration
 
         Raises:
             Exception: If endpoint not found or API call fails
@@ -72,15 +75,14 @@ class DatabricksEndpointAdapter:
         corrected_config: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Update AI Gateway configuration (rate limits) for an endpoint.
-        Compatible with Databricks foundation models.
+        Update AI Gateway configuration (rate limits) for an endpoint. Compatible with Databricks foundation models.
 
         Args:
-            endpoint_name: Name of the endpoint to update
-            corrected_config: Configuration dictionary with corrected rate_limits
+            endpoint_name (str): Name of the endpoint to update
+            corrected_config (Dict[str, Any]): Configuration dictionary with corrected rate_limits
 
         Returns:
-            Updated endpoint configuration dictionary
+            Dict[str, Any]: Updated endpoint configuration dictionary
 
         Raises:
             Exception: If update fails
@@ -146,10 +148,10 @@ class DatabricksEndpointAdapter:
         Get endpoints matching a filter.
 
         Args:
-            filter_dict: Dictionary with filter criteria (e.g., {"name": "^databricks-.*"})
+            filter_dict (Dict[str, str]): Dictionary with filter criteria (e.g., {"name": "^databricks-.*"})
 
         Returns:
-            List of endpoint dictionaries matching the filter
+            List[Dict[str, Any]]: List of endpoint dictionaries matching the filter
         """
         logger.info(f"Filtering endpoints with: {filter_dict}")
         all_endpoints = self.list_endpoints()
