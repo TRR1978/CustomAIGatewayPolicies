@@ -17,18 +17,14 @@ class PolicyEngine:
         Parse a policy key into components for rate limit manipulation.
 
         Args:
-            policy_key: Policy key in dot notation (e.g., 'ai_gateway.rate_limits.user.requests_per_minute')
+            policy_key (str): Policy key in dot notation (e.g., 'ai_gateway.rate_limits.user.requests_per_minute')
 
         Returns:
-            Dictionary with parsed components:
+            Dict[str, Any]: Dictionary with parsed components:
                 - is_rate_limit: Whether this is a rate limit policy
                 - key_name: The rate limit key name (e.g., 'user')
                 - field: The field name (e.g., 'requests_per_minute')
                 - renewal_period: The renewal period (e.g., 'minute')
-
-        Examples:
-            >>> PolicyEngine.parse_rate_limit_key('ai_gateway.rate_limits.user.requests_per_minute')
-            {'is_rate_limit': True, 'key_name': 'user', 'field': 'requests_per_minute', 'renewal_period': 'minute'}
         """
         parts = policy_key.split('.')
 
@@ -52,15 +48,11 @@ class PolicyEngine:
         Search for a nested key in a dictionary using dot notation.
 
         Args:
-            data: Dictionary to search
-            key: Key in dot notation (e.g., 'config.rate_limit')
+            data (Dict[str, Any]): Dictionary to search
+            key (str): Key in dot notation (e.g., 'config.rate_limit')
 
         Returns:
-            Tuple of (exists, value) where exists is True if key found
-
-        Examples:
-            >>> PolicyEngine.search_nested_key({'config': {'rate_limit': 100}}, 'config.rate_limit')
-            (True, 100)
+            Tuple[bool, Any]: (exists, value) where exists is True if key found
         """
         keys = key.split(".")
         current = data
@@ -80,7 +72,7 @@ class PolicyEngine:
         self,
         rules_policy: Dict[str, Dict[str, Any]],
         endpoint_config: Dict[str, Any]
-    ) -> PolicyResult:
+    ) -> 'PolicyResult':
         """
         Apply policy rules to an endpoint configuration.
 
@@ -88,11 +80,11 @@ class PolicyEngine:
         whether corrected_config is actually applied to the endpoint.
 
         Args:
-            rules_policy: Dictionary of policy rules
-            endpoint_config: Endpoint configuration to validate
+            rules_policy (Dict[str, Dict[str, Any]]): Dictionary of policy rules
+            endpoint_config (Dict[str, Any]): Endpoint configuration to validate
 
         Returns:
-            PolicyResult with validation results and corrected configuration
+            PolicyResult: Validation results and corrected configuration
 
         Raises:
             ValueError: If rules_policy or endpoint_config is invalid
@@ -136,9 +128,20 @@ class PolicyEngine:
         policy_key: str,
         rule: Dict[str, Any],
         corrected_config: Dict[str, Any],
-        errors: List[ValidationError]
+        errors: List['ValidationError']
     ) -> None:
-        """Apply a single policy rule (internal method)."""
+        """
+        Apply a single policy rule (internal method).
+
+        Args:
+            policy_key (str): The policy key to apply
+            rule (Dict[str, Any]): The rule definition
+            corrected_config (Dict[str, Any]): The config to correct
+            errors (List[ValidationError]): List to append errors to
+
+        Returns:
+            None
+        """
         rule_type = rule.get("type")
         default = rule.get("default")
         error_message = rule.get("error_message", f"Policy violation for {policy_key}")
@@ -185,9 +188,23 @@ class PolicyEngine:
         error_message: str,
         parsed: Dict[str, Any],
         corrected_config: Dict[str, Any],
-        errors: List[ValidationError]
+        errors: List['ValidationError']
     ) -> None:
-        """Apply a rate limit specific rule."""
+        """
+        Apply a rate limit specific rule.
+
+        Args:
+            policy_key (str): The policy key
+            rule_type (str): The type of rule ('required', 'fixed', etc.)
+            default (Any): The default value to enforce
+            error_message (str): Error message to use
+            parsed (Dict[str, Any]): Parsed key info
+            corrected_config (Dict[str, Any]): Config to correct
+            errors (List[ValidationError]): List to append errors to
+
+        Returns:
+            None
+        """
         key_name = parsed['key_name']
         renewal_period = parsed['renewal_period']
 
@@ -207,23 +224,21 @@ class PolicyEngine:
                     message=f"{error_message} (rate_limits missing)"
                 ))
                 return
-
-        if rule_type == 'fixed':
-            corrected_config['ai_gateway']['rate_limits'] = []
+            elif rule_type == 'fixed':
+                corrected_config['ai_gateway']['rate_limits'] = []
 
         rate_limits = corrected_config['ai_gateway']['rate_limits']       
 
         limit_entry, limit_index = self._find_rate_limit_entry(rate_limits, key_name)
 
-        if rule_type == 'required':
-            if limit_entry is None:
+        if limit_entry is None:
+            if rule_type == 'required':            
                 errors.append(ValidationError(
                     key=policy_key,
                     message=f"{error_message} (key '{key_name}' not found)"
                 ))
 
-        elif rule_type == 'fixed':
-            if limit_entry is None:
+            elif rule_type == 'fixed':
                 errors.append(ValidationError(
                     key=policy_key,
                     message=f"{error_message} (key '{key_name}' missing)"
@@ -234,17 +249,17 @@ class PolicyEngine:
                     'calls': default,
                     'renewal_period': renewal_period
                 })
-            else:
-                current_value = limit_entry.get('calls')
-                if current_value != default:
-                    errors.append(ValidationError(
-                        key=policy_key,
-                        message=f"{error_message} (expected: {default}, found: {current_value})",
-                        expected=default,
-                        found=current_value
-                    ))
-                    # Always update the calls value in the array
-                    corrected_config['ai_gateway']['rate_limits'][limit_index]['calls'] = default
+        else:
+            current_value = limit_entry.get('calls')
+            if current_value != default:
+                errors.append(ValidationError(
+                    key=policy_key,
+                    message=f"{error_message} (expected: {default}, found: {current_value})",
+                    expected=default,
+                    found=current_value
+                ))
+                # Always update the calls value in the array
+                corrected_config['ai_gateway']['rate_limits'][limit_index]['calls'] = default
 
     def _apply_generic_rule(
         self,
@@ -253,9 +268,22 @@ class PolicyEngine:
         default: Any,
         error_message: str,
         corrected_config: Dict[str, Any],
-        errors: List[ValidationError]
+        errors: List['ValidationError']
     ) -> None:
-        """Apply a generic (non-rate_limit) rule."""
+        """
+        Apply a generic (non-rate_limit) rule.
+
+        Args:
+            policy_key (str): The policy key
+            rule_type (str): The type of rule ('required', 'fixed', etc.)
+            default (Any): The default value to enforce
+            error_message (str): Error message to use
+            corrected_config (Dict[str, Any]): Config to correct
+            errors (List[ValidationError]): List to append errors to
+
+        Returns:
+            None
+        """
         exists, value = self.search_nested_key(corrected_config, policy_key)
 
         if rule_type == 'required':

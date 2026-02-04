@@ -131,6 +131,10 @@ class PolicyManager:
             try:
                 self.adapter.update_ai_gateway(endpoint_name, result.corrected_config)
                 logger.info(f"Successfully updated endpoint {endpoint_name}")
+                # if update is successful, re-apply policy to confirm compliance
+                result = self.engine.apply_policy(rules, endpoint_config)
+                logger.info(f"Re-validation after update: is_compliant={result.is_compliant}")
+
             except Exception as e:
                 logger.error(f"Failed to update endpoint {endpoint_name}: {e}")
                 result.errors.append(ValidationError(
