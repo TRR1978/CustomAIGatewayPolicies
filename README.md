@@ -58,7 +58,6 @@ copy .env.example .env
 
 ### 2. VS Code Setup (Optional but Recommended)
 You may create a `.vscode/settings.json` file with:
-
 ```json
 {
   "terminal.integrated.env.windows": {
@@ -70,18 +69,25 @@ You may create a `.vscode/settings.json` file with:
 
 This ensures consistent import behavior in the editor without manually creating a `.env` file.
 
-### 3. pytest Configuration
-The `pytest.ini` file already includes:
-
-```
-pythonpath = src
-```
-
-This allows tests to run correctly without additional configuration.
+### 3. pytest and Coverage
+- The `pytest.ini` file already includes:
+  ```
+  pythonpath = src
+  ```
+  so tests run correctly without extra configuration.
+- The project includes unit and coverage tests for all main modules, with additional files (suffix `_cov.py`) to ensure 100% coverage.
+- To run all tests and check coverage:
+  ```sh
+  pipenv run pytest --cov=src --cov-report=xml --cov-report=html --junitxml=test-output.xml
+  pipenv run coverage report --fail-under=100
+  ```
+- The CI pipeline enforces 100% coverage.
 
 ### Summary
 - Use `.env.example` as a template for your local `.env`.
 - Never commit `.env` to the repository.
+- VS Code users can automate environment configuration via `.vscode/settings.json`.
+- Test coverage is 100% and maintained with dedicated coverage tests.
 - VS Code users can automate environment configuration via `.vscode/settings.json`.
 
 ---
