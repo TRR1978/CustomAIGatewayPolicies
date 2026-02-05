@@ -105,7 +105,7 @@ def test_apply_policy_missing_rate_limit_entry(engine):
     assert not result.is_compliant
     assert len(result.errors) == 1
     # Correction: new entry added
-    admin_limits = [rl for rl in result.corrected_config['ai_gateway']['rate_limits'] if rl['key'] == 'admin']
+    admin_limits = [rl for rl in result.corrected_config['ai_gateway']['rate_limits'] if rl.get('principal') == 'admin']
     assert admin_limits and admin_limits[0]['calls'] == 10
 
 def test_apply_policy_internal_error(engine, mocker):

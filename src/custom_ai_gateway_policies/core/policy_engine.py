@@ -173,11 +173,26 @@ class PolicyEngine:
         limit_entry = None
         limit_index = None
         for idx, limit in enumerate(rate_limits):
-            if limit.get('key') == key_name:
+            if ((limit.get('key') == key_name) or 
+                (limit.get('key') == 'user_group' and limit.get('principal') == key_name)):
                 limit_entry = limit
                 limit_index = idx
                 break
         return limit_entry, limit_index
+    
+    def _set_rate_limit(self, key_name, default, renewal_period):
+        rate_limit = {}
+        if key_name in ('user'):
+            rate_limit['key'] = key_name
+            rate_limit['calls'] = default
+            rate_limit['renewal_period'] = renewal_period
+        else:
+            rate_limit['key'] = 'user_group'
+            rate_limit['principal'] = key_name
+            rate_limit['calls'] = default
+            rate_limit['renewal_period'] = renewal_period
+            
+        return rate_limit
 
     def _apply_rate_limit_rule(
         self,
@@ -243,11 +258,8 @@ class PolicyEngine:
                     message=f"{error_message} (key '{key_name}' missing)"
                 ))
                 # Always add new rate limit entry
-                corrected_config['ai_gateway']['rate_limits'].append({
-                    'key': key_name,
-                    'calls': default,
-                    'renewal_period': renewal_period
-                })
+                corrected_config['ai_gateway']['rate_limits'].append(self._set_rate_limit(key_name, default, renewal_period))
+                 
         else:
             current_value = limit_entry.get('calls')
             if current_value != default:
