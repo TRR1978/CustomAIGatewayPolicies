@@ -6,9 +6,11 @@ import logging
 
 from custom_ai_gateway_policies.adapters.databricks_adapter import DatabricksEndpointAdapter
 from custom_ai_gateway_policies.core.policy_engine import PolicyEngine
-from custom_ai_gateway_policies.core.policy_loader import read_policy, validate_policy_structure
+from custom_ai_gateway_policies.core.policy_loader import read_policy, validate_policy_structure, check_policy_duplicate
 from custom_ai_gateway_policies.core.filters import apply_to_filter, matches_filter
 from custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
+
+from custom_ai_gateway_policies.constants import RULES, APPLIES_TO, POLICY_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +106,10 @@ class PolicyManager:
             except Exception as e:
                 logger.error(f"Failed to load policy from {policy_file}: {e}")
 
+        if check_policy_duplicate(policies):
+            logger.error("Duplicate policy names found in the loaded policies")
+            raise ValueError("Duplicate policy names detected. Ensure all policies have unique 'policy_name' fields.")
+
         return policies
 
     def apply_policy(
@@ -126,6 +132,10 @@ class PolicyManager:
         """
         logger.info(f"Applying policy to endpoint: {endpoint_name} (dry_mode={dry_mode})")
 
+        policy_name = policy.get(POLICY_NAME)
+        # Check if policy applies to this endpoint
+        applies_to = policy.get(APPLIES_TO, {})
+
         # Get current endpoint configuration
         try:
             endpoint_config = self.adapter.get_serving_endpoint_details(endpoint_name)
@@ -138,23 +148,23 @@ class PolicyManager:
                     key="endpoint",
                     message=f"Failed to retrieve endpoint: {str(e)}"
                 )],
-                endpoint_name=endpoint_name
+                endpoint_name=endpoint_name,
+                policy_name=policy_name
             )
 
-        # Check if policy applies to this endpoint
-        applies_to = policy.get("applies_to", {})
         if applies_to and not matches_filter(endpoint_config, applies_to):
             logger.info(f"Policy does not apply to endpoint {endpoint_name}")
             return PolicyResult(
                 is_compliant=True,
                 corrected_config=endpoint_config,
                 errors=[],
-                endpoint_name=endpoint_name
+                endpoint_name=endpoint_name,
+                policy_name=policy_name
             )
 
         # Apply policy rules
-        rules = policy.get("rules", {})
-        result = self.engine.apply_policy(rules, endpoint_config)
+        rules = policy.get(RULES, {})
+        result = self.engine.apply_policy(policy_name, rules, endpoint_config)
         result.endpoint_name = endpoint_name
 
         # Apply corrections if not in dry mode
@@ -164,7 +174,7 @@ class PolicyManager:
                 self.adapter.update_ai_gateway(endpoint_name, result.corrected_config)
                 logger.info(f"Successfully updated endpoint {endpoint_name}")
                 # if update is successful, re-apply policy to confirm compliance
-                result = self.engine.apply_policy(rules, endpoint_config)
+                result = self.engine.apply_policy(policy_name, rules, endpoint_config)
                 logger.info(f"Re-validation after update: is_compliant={result.is_compliant}")
 
             except Exception as e:
@@ -196,7 +206,7 @@ class PolicyManager:
         """
         # Determine filter
         if filter_dict is None:
-            filter_dict = policy.get("applies_to", {})
+            filter_dict = policy.get(APPLIES_TO, {})
 
         logger.info(f"Applying policy to multiple endpoints (filter={filter_dict}, dry_mode={dry_mode})")
 

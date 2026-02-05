@@ -5,6 +5,12 @@ from typing import Dict, Any
 from pathlib import Path
 import logging
 
+from custom_ai_gateway_policies.constants import (
+    REQUIRED_POLICY_FIELDS, RULES, POLICY_NAME,
+    TYPE_VALUES, TYPE_FIXED,
+    RULE_TYPE, RULE_DEFAULT
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -57,25 +63,42 @@ def validate_policy_structure(policy: Dict[str, Any]) -> bool:
     Raises:
         ValueError: If policy structure is invalid
     """
-    required_fields = ["policy_name", "policy_version", "rules"]
-
-    for field in required_fields:
+    for field in REQUIRED_POLICY_FIELDS:
         if field not in policy:
             raise ValueError(f"Policy missing required field: {field}")
 
-    if not isinstance(policy["rules"], dict):
-        raise ValueError("Policy 'rules' must be a dictionary")
+    if not isinstance(policy[RULES], dict):
+        raise ValueError(f"Policy '{RULES}' must be a dictionary")
 
     # Validate each rule
-    for key, rule in policy["rules"].items():
-        if "type" not in rule:
-            raise ValueError(f"Rule '{key}' missing 'type' field")
+    for key, rule in policy[RULES].items():
+        if RULE_TYPE not in rule:
+            raise ValueError(f"Rule '{key}' missing '{RULE_TYPE}' field")
 
-        if rule["type"] not in ["required", "fixed"]:
-            raise ValueError(f"Rule '{key}' has invalid type: {rule['type']}")
+        if rule[RULE_TYPE] not in TYPE_VALUES:
+            raise ValueError(f"Rule '{key}' has invalid type: {rule[RULE_TYPE]}")
 
-        if rule["type"] == "fixed" and "default" not in rule:
-            raise ValueError(f"Rule '{key}' with type 'fixed' must have 'default' field")
+        if rule[RULE_TYPE] == TYPE_FIXED and RULE_DEFAULT not in rule:
+            raise ValueError(f"Rule '{key}' with type '{TYPE_FIXED}' must have '{RULE_DEFAULT}' field")
 
-    logger.info(f"Policy structure validated: {policy['policy_name']}")
+    logger.info(f"Policy structure validated: {policy[POLICY_NAME]}")
     return True
+
+
+def check_policy_duplicate(policies: Dict[str, Dict[str, Any]]) -> bool:
+    """
+    Check if a policy with the same name
+
+    Args:
+        policies (Dict[str, Dict[str, Any]]): Dictionary of existing policies keyed by "name:version"
+
+    Returns:
+        bool: True if duplicate exists
+    """
+    seen = set()
+    policy_names = [p.get(POLICY_NAME) for p in policies]
+    for key in policy_names:
+        if key in seen:
+            return True
+        seen.add(key)
+    return False

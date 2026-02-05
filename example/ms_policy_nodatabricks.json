@@ -1,5 +1,5 @@
 {
- "policy_name": "disabled-serving-policy",
+ "policy_name": "add-rate-limit-serving-policy",
  "policy_version": "1.0",
  "description": "Policy que deshabilita completamente el endpoint fijando el rate limit a 0",
  "applies_to": {

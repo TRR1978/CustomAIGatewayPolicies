@@ -6,7 +6,7 @@ import logging
 
 from custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
 from custom_ai_gateway_policies.constants import (
-    RULE_TYPE, RULE_DEFAULT, RULE_ERROR_MESSAGE,
+    RULE_TYPE, RULE_DEFAULT, RULE_ERROR_MESSAGE, NAME,
     KEY_AI_GATEWAY, KEY_RATE_LIMITS, KEY_USER, KEY_USER_GROUP, KEY_PRINCIPAL, KEY_CALLS, KEY_RENEWAL_PERIOD,
     TYPE_REQUIRED, TYPE_FIXED, FIELD, KEY_NAME, IS_RATE_LIMIT, REQUESTS_PER_PREFIX, MINUTE, KEY_KEY
 )
@@ -83,7 +83,8 @@ class PolicyEngine:
 
     def apply_policy(
         self,
-        rules_policy: Dict[str, Dict[str, Any]],
+        policy_name: str,
+        policy_rules: Dict[str, Dict[str, Any]],
         endpoint_config: Dict[str, Any]
     ) -> PolicyResult:
         """
@@ -93,26 +94,29 @@ class PolicyEngine:
         whether corrected_config is actually applied to the endpoint.
 
         Args:
-            rules_policy (Dict[str, Dict[str, Any]]): Dictionary of policy rules
+            policy_name (str): Name of the policy being applied (for reporting)
+            policy_rules (Dict[str, Dict[str, Any]]): Dictionary of policy rules
             endpoint_config (Dict[str, Any]): Endpoint configuration to validate
 
         Returns:
             PolicyResult: Validation results and corrected configuration
 
         Raises:
-            ValueError: If rules_policy or endpoint_config is invalid
+            ValueError: If policy_rules or endpoint_config is invalid
         """
-        if not isinstance(rules_policy, dict):
-            raise ValueError("rules_policy must be a dictionary")
+        if not isinstance(policy_rules, dict):
+            raise ValueError("policy_rules must be a dictionary")
         if not isinstance(endpoint_config, dict):
             raise ValueError("endpoint_config must be a dictionary")
+
+        endpoint_name = endpoint_config.get(NAME)
 
         errors: List[ValidationError] = []
         corrected_config = endpoint_config.copy()
 
-        logger.info(f"Applying {len(rules_policy)} policy rules")
+        logger.info(f"Applying {len(policy_rules)} policy rules")
 
-        for policy_key, rule in rules_policy.items():
+        for policy_key, rule in policy_rules.items():
             try:
                 self._apply_single_rule(
                     policy_key=policy_key,
@@ -133,7 +137,9 @@ class PolicyEngine:
         return PolicyResult(
             is_compliant=is_compliant,
             corrected_config=corrected_config,
-            errors=errors
+            errors=errors,
+            endpoint_name=endpoint_name,
+            policy_name=policy_name
         )
 
     def _apply_single_rule(

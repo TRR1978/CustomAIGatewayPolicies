@@ -54,12 +54,12 @@ def test_apply_policy_compliant(engine):
             'config': {'enabled': True}
         }
     }
-    result = engine.apply_policy(rules, config)
+    policy_name = 'test_policy'
+    result = engine.apply_policy(policy_name, rules, config)
     assert isinstance(result, PolicyResult)
     assert result.is_compliant
     assert result.errors == []
     assert result.corrected_config['ai_gateway']['rate_limits'][0]['calls'] == 100
-
 def test_apply_policy_noncompliant_and_correction(engine):
     rules = {
         'ai_gateway.rate_limits.user.requests_per_minute': {
@@ -81,12 +81,12 @@ def test_apply_policy_noncompliant_and_correction(engine):
             'config': {'enabled': False}
         }
     }
-    result = engine.apply_policy(rules, config)
+    policy_name = 'test_policy'
+    result = engine.apply_policy(policy_name, rules, config)
     assert not result.is_compliant
     assert len(result.errors) == 1
     # Correction applied
     assert result.corrected_config['ai_gateway']['rate_limits'][0]['calls'] == 50
-
 def test_apply_policy_missing_rate_limit_entry(engine):
     rules = {
         'ai_gateway.rate_limits.user_group.admin.requests_per_minute': {
@@ -102,19 +102,44 @@ def test_apply_policy_missing_rate_limit_entry(engine):
             ]
         }
     }
-    result = engine.apply_policy(rules, config)
+    policy_name = 'test_policy'
+    result = engine.apply_policy(policy_name, rules, config)
     assert not result.is_compliant
     assert len(result.errors) == 1
     # Correction: new entry added
     admin_limits = [rl for rl in result.corrected_config['ai_gateway']['rate_limits'] if rl.get('principal') == 'admin']
     assert admin_limits and admin_limits[0]['calls'] == 10
-
 def test_apply_policy_internal_error(engine, mocker):
     # Simulate error in _apply_single_rule
     rules = {'ai_gateway.config.enabled': {'type': 'required', 'default': True}}
     config = {'ai_gateway': {'config': {'enabled': True}}}
     mocker.patch.object(engine, '_apply_single_rule', side_effect=Exception('fail'))
-    result = engine.apply_policy(rules, config)
+    policy_name = 'test_policy'
+    result = engine.apply_policy(policy_name, rules, config)
     assert not result.is_compliant
     assert len(result.errors) == 1
     assert 'Internal error' in result.errors[0].message
+    assert not result.is_compliant
+    assert len(result.errors) == 1
+    assert 'Internal error' in result.errors[0].message
+
+def test_apply_policy_result_fields(engine):
+    rules = {
+        'ai_gateway.rate_limits.user.requests_per_minute': {
+            'type': 'fixed',
+            'default': 100,
+            'error_message': 'User rate limit must be 100'
+        }
+    }
+    config = {
+        'name': 'endpoint1',
+        'ai_gateway': {
+            'rate_limits': [
+                {'key': 'user', 'calls': 100, 'renewal_period': 'minute'}
+            ]
+        }
+    }
+    policy_name = 'test_policy'
+    result = engine.apply_policy(policy_name, rules, config)
+    assert result.policy_name == policy_name
+    assert result.endpoint_name == 'endpoint1'

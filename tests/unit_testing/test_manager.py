@@ -81,9 +81,10 @@ def test_apply_policy_bulk_with_filter(manager, mock_adapter):
 
 def test_get_compliance_report(manager):
     results = [
-        PolicyResult(is_compliant=True, corrected_config={}, errors=[], endpoint_name='e1'),
-        PolicyResult(is_compliant=False, corrected_config={}, errors=[ValidationError(key='k', message='m')], endpoint_name='e2')
+        PolicyResult(is_compliant=True, corrected_config={}, errors=[], endpoint_name='e1', policy_name='p1'),
+        PolicyResult(is_compliant=False, corrected_config={}, errors=[ValidationError(key='k', message='m')], endpoint_name='e2', policy_name='p1')
     ]
+    # Add a new parameter 'include_details' to the method call
     report = manager.get_compliance_report(results)
     assert report['total_endpoints'] == 2
     assert report['compliant'] == 1

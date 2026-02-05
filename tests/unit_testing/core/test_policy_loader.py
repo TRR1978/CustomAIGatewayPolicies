@@ -57,3 +57,18 @@ def test_validate_policy_structure_fixed_missing_default():
     policy = {"policy_name": "p", "policy_version": "1.0", "rules": {"r": {"type": "fixed"}}}
     with pytest.raises(ValueError):
         validate_policy_structure(policy)
+
+def test_check_policy_duplicate():
+    from custom_ai_gateway_policies.core.policy_loader import check_policy_duplicate
+    # No duplicates
+    policies = [
+        {"policy_name": "p1", "policy_version": "1.0", "rules": {}},
+        {"policy_name": "p2", "policy_version": "1.0", "rules": {}}
+    ]
+    assert not check_policy_duplicate(policies)
+    # With duplicate
+    policies = [
+        {"policy_name": "p1", "policy_version": "1.0", "rules": {}},
+        {"policy_name": "p1", "policy_version": "2.0", "rules": {}}
+    ]
+    assert check_policy_duplicate(policies)

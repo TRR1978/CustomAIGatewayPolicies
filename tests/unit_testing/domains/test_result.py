@@ -9,13 +9,26 @@ def test_validation_error_properties():
     assert err.found == 2
     assert err.error == "msg"
 
+def test_policy_result_requires_policy_and_endpoint_name():
+    # Both policy_name and endpoint_name are required
+    result = PolicyResult(
+        is_compliant=True,
+        corrected_config={},
+        errors=[],
+        policy_name="test_policy",
+        endpoint_name="ep1"
+    )
+    assert result.policy_name == "test_policy"
+    assert result.endpoint_name == "ep1"
+
 def test_policy_result_bool():
-    result = PolicyResult(is_compliant=True, corrected_config={}, errors=[])
+    result = PolicyResult(is_compliant=True, corrected_config={}, errors=[], policy_name="p", endpoint_name="e")
     assert bool(result) is True
-    result2 = PolicyResult(is_compliant=False, corrected_config={}, errors=[])
+    result2 = PolicyResult(is_compliant=False, corrected_config={}, errors=[], policy_name="p", endpoint_name="e")
     assert not result2
 
 def test_policy_result_fields():
-    result = PolicyResult(is_compliant=False, corrected_config={"foo": 1}, errors=[], endpoint_name="ep1")
+    result = PolicyResult(is_compliant=False, corrected_config={"foo": 1}, errors=[], policy_name="p", endpoint_name="ep1")
     assert result.endpoint_name == "ep1"
+    assert result.policy_name == "p"
     assert result.corrected_config["foo"] == 1
