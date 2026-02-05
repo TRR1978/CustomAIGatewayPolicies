@@ -90,3 +90,17 @@ def test_get_compliance_report(manager):
     assert report['non_compliant'] == 1
     assert report['total_violations'] == 1
     assert report['violations'][0]['endpoint'] == 'e2'
+
+def test_load_policies_bulk(manager, tmp_path):
+    import json
+    # Create multiple policy files
+    policy1 = {'policy_name': 'bulk1', 'policy_version': '1.0', 'rules': {}}
+    policy2 = {'policy_name': 'bulk2', 'policy_version': '1.0', 'rules': {}}
+    (tmp_path / 'policy1.json').write_text(json.dumps(policy1))
+    (tmp_path / 'policy2.json').write_text(json.dumps(policy2))
+    # Load policies from directory
+    loaded = manager.load_policies_bulk(tmp_path)
+    names = {p['policy_name'] for p in loaded}
+    assert 'bulk1' in names
+    assert 'bulk2' in names
+    assert len(loaded) == 2

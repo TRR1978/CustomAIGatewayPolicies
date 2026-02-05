@@ -178,4 +178,79 @@ These rules will ensure the corresponding rate limit entry is present in the end
 
 ---
 
-For more advanced usage, see the example policies in the `example/` folder.
+## PolicyManager: High-Level API Usage
+
+The `PolicyManager` class provides a high-level interface for loading, validating, and applying policies to Databricks endpoints. You can use it to apply a policy to a single endpoint or to multiple endpoints in bulk, as well as to generate compliance reports.
+
+### Basic Usage Example
+
+```python
+from custom_ai_gateway_policies.manager import PolicyManager
+
+# Initialize the manager
+manager = PolicyManager()
+
+# Load a policy from a JSON file or dictionary
+policy = manager.load_policy("policy.json")
+
+# Apply the policy to a specific endpoint (dry-run mode)
+result = manager.apply_policy("my-endpoint", policy, dry_mode=True)
+if not result.is_compliant:
+    print(f"Violations found: {len(result.errors)}")
+    for err in result.errors:
+        print(f"- {err.key}: {err.message}")
+else:
+    print("Endpoint is compliant with the policy")
+```
+
+### Apply a Policy to Multiple Endpoints (Bulk)
+
+```python
+# You can filter endpoints using a regex dictionary (e.g., by name)
+bulk_results = manager.apply_policy_bulk(policy, filter_dict={"name": "^databricks-.*"}, dry_mode=True)
+for res in bulk_results:
+    print(f"Endpoint: {res.endpoint_name}, Compliant: {res.is_compliant}")
+    if not res.is_compliant:
+        for err in res.errors:
+            print(f"  - {err.key}: {err.message}")
+```
+
+### Apply Real Corrections (Not Dry-Run)
+
+```python
+# To actually apply corrections to the endpoints:
+result = manager.apply_policy("my-endpoint", policy, dry_mode=False)
+# Or in bulk mode:
+bulk_results = manager.apply_policy_bulk(policy, dry_mode=False)
+```
+
+### Generate a Compliance Report
+
+```python
+report = manager.get_compliance_report(bulk_results)
+print(report)
+# Example output:
+# {
+#   'total_endpoints': 3,
+#   'compliant': 2,
+#   'non_compliant': 1,
+#   'compliance_rate': 0.666,
+#   'total_violations': 2,
+#   'violations': [
+#       {'endpoint': 'databricks-prod', 'key': 'ai_gateway.rate_limits.user.requests_per_minute', 'message': 'Rate limit must be 0'}
+#   ]
+# }
+```
+
+### Main Methods of PolicyManager
+
+- `load_policy(policy_source)`: Loads and validates a policy from a file or dictionary.
+- `apply_policy(endpoint_name, policy, dry_mode=True)`: Applies the policy to a single endpoint. If `dry_mode` is `False`, corrections are applied.
+- `apply_policy_bulk(policy, filter_dict=None, dry_mode=True)`: Applies the policy to all endpoints matching the filter (or all if no filter is specified).
+- `get_compliance_report(results)`: Generates a summary report from a list of policy results.
+
+> **Note:** All methods return `PolicyResult` objects or lists of them, containing information about compliance, proposed/applied corrections, and any errors found.
+
+---
+
+For more examples, see the `PolicyManager` class docstring or review the tests in the `tests/` folder.
