@@ -4,5 +4,5 @@ from custom_ai_gateway_policies import PolicyManager
 
 manager = PolicyManager()
 policy = manager.load_policy("./example/ms_policy_nodatabricks_plus.json")
-result = manager.apply_policy("databricks-claude-opus-4-5", policy, dry_mode=True)
+result = manager.apply_policy("databricks-claude-opus-4-5", policy, dry_mode=False)
 result.corrected_config

@@ -120,6 +120,9 @@ class DatabricksEndpointAdapter:
                     "renewal_period": renewal_period,
                     "key": key_enum
                 }
+                
+                if "principal" in rl:
+                    rate_limit_kwargs["principal"] = rl["principal"]
 
                 if "calls" in rl:
                     rate_limit_kwargs["calls"] = rl["calls"]

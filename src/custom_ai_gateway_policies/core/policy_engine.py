@@ -16,31 +16,38 @@ class PolicyEngine:
         """
         Parse a policy key into components for rate limit manipulation.
 
-        Args:
-            policy_key (str): Policy key in dot notation (e.g., 'ai_gateway.rate_limits.user.requests_per_minute')
+        Supports keys like:
+        - ai_gateway.rate_limits.user.requests_per_minute
+        - ai_gateway.rate_limits.user_group.<group>.requests_per_minute
 
         Returns:
-            Dict[str, Any]: Dictionary with parsed components:
-                - is_rate_limit: Whether this is a rate limit policy
-                - key_name: The rate limit key name (e.g., 'user')
-                - field: The field name (e.g., 'requests_per_minute')
-                - renewal_period: The renewal period (e.g., 'minute')
+            Dict[str, Any]:
+                - is_rate_limit: bool
+                - key_name: str (user or group name)
+                - is_user_group: bool
+                - field: str
+                - renewal_period: str
         """
         parts = policy_key.split('.')
-
+        return_value = {}
         if len(parts) >= 4 and parts[0] == 'ai_gateway' and parts[1] == 'rate_limits':
-            key_name = parts[2]
-            field = parts[3]
-            renewal_period = field.replace('requests_per_', '') if field.startswith('requests_per_') else 'minute'
-
-            return {
-                'is_rate_limit': True,
-                'key_name': key_name,
-                'field': field,
-                'renewal_period': renewal_period
-            }
-
-        return {'is_rate_limit': False}
+            return_value['is_rate_limit'] = True
+            
+            if parts[2] in ('user') and len(parts) == 4:
+                # user_group.<group>.requests_per_x
+                return_value["key_name"] = parts[2]
+                return_value["field"]  = parts[3]
+            else:
+                return_value["key_name"] = parts[2]
+                return_value["principal"] = parts[3]
+                return_value["field"]  = parts[4]
+                
+            renewal_period = return_value["field"].replace('requests_per_', '') if return_value["field"].startswith('requests_per_') else 'minute'
+            return_value["renewal_period"] = renewal_period
+        else:
+            return_value['is_rate_limit'] = False
+            
+        return return_value
 
     @staticmethod
     def search_nested_key(data: Dict[str, Any], key: str) -> Tuple[bool, Any]:
@@ -168,30 +175,29 @@ class PolicyEngine:
                 errors=errors
             )
 
-    def _find_rate_limit_entry(self, rate_limits, key_name):
-        # Find the specific rate limit entry by key
+    def _find_rate_limit_entry(self, rate_limits, key_name, principal=None):
+        # Find the specific rate limit entry by key or user_group/principal
         limit_entry = None
         limit_index = None
         for idx, limit in enumerate(rate_limits):
-            if ((limit.get('key') == key_name) or 
-                (limit.get('key') == 'user_group' and limit.get('principal') == key_name)):
-                limit_entry = limit
-                limit_index = idx
-                break
+            if limit.get('key') == key_name:
+                if ((principal is None) or (limit.get('principal', None) == principal)):
+                    limit_entry = limit
+                    limit_index = idx
+                    break
+                
         return limit_entry, limit_index
     
-    def _set_rate_limit(self, key_name, default, renewal_period):
+    def _set_rate_limit(self, key_name, default, renewal_period, principal=None):
         rate_limit = {}
-        if key_name in ('user'):
-            rate_limit['key'] = key_name
-            rate_limit['calls'] = default
-            rate_limit['renewal_period'] = renewal_period
-        else:
-            rate_limit['key'] = 'user_group'
-            rate_limit['principal'] = key_name
-            rate_limit['calls'] = default
-            rate_limit['renewal_period'] = renewal_period
-            
+        
+        rate_limit['key'] = key_name
+        rate_limit['calls'] = default
+        rate_limit['renewal_period'] = renewal_period        
+        
+        if principal is not None:            
+            rate_limit['principal'] = principal        
+        
         return rate_limit
 
     def _apply_rate_limit_rule(
@@ -219,8 +225,9 @@ class PolicyEngine:
         Returns:
             None
         """
-        key_name = parsed['key_name']
-        renewal_period = parsed['renewal_period']
+        key_name = parsed.get('key_name')
+        principal = parsed.get('principal')
+        renewal_period = parsed.get('renewal_period')
 
         # Navigate to rate_limits array
         if 'ai_gateway' not in corrected_config:
@@ -243,7 +250,7 @@ class PolicyEngine:
 
         rate_limits = corrected_config['ai_gateway']['rate_limits']
 
-        limit_entry, limit_index = self._find_rate_limit_entry(rate_limits, key_name)
+        limit_entry, limit_index = self._find_rate_limit_entry(rate_limits, key_name, principal)
 
         if limit_entry is None:
             if rule_type == 'required':
@@ -258,8 +265,9 @@ class PolicyEngine:
                     message=f"{error_message} (key '{key_name}' missing)"
                 ))
                 # Always add new rate limit entry
-                corrected_config['ai_gateway']['rate_limits'].append(self._set_rate_limit(key_name, default, renewal_period))
-                 
+                corrected_config['ai_gateway']['rate_limits'].append(
+                    self._set_rate_limit(key_name, default, renewal_period, principal)
+                )
         else:
             current_value = limit_entry.get('calls')
             if current_value != default:

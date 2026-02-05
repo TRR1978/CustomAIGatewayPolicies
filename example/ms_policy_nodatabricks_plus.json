@@ -15,7 +15,7 @@
      "default": 0,
      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"
    },
-   "ai_gateway.rate_limits.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper.requests_per_minute": {
+   "ai_gateway.rate_limits.user_group.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper.requests_per_minute": {
      "type": "fixed",
      "default": 0,
      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"

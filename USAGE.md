@@ -56,7 +56,14 @@ A policy is a JSON file with the following main sections:
 
 ## Rules Syntax
 
-Each rule is a key-value pair under `rules`. The key uses dot notation to specify the config path. Supported rule types:
+
+Each rule is a key-value pair under `rules`. The key uses dot notation to specify the config path. Supported syntaxes for rate limit rules:
+
+### Supported Rate Limit Rule Key Patterns
+
+- `ai_gateway.rate_limits.user.requests_per_minute`: Applies to the default user rate limit.
+- `ai_gateway.rate_limits.user_group.<group>.requests_per_minute`: Applies to a specific user group (e.g., `user_group.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper`).
+- `ai_gateway.rate_limits.principal.<name>.requests_per_minute`: Applies to a specific principal (e.g., `principal.uami_pepe`).
 
 ### 1. Required Key
 ```json
@@ -77,17 +84,38 @@ Each rule is a key-value pair under `rules`. The key uses dot notation to specif
 ```
 - Ensures the value is exactly as specified by `default`. If not, it will be corrected.
 
+
 ### 3. Rate Limit Rules
-- Keys like `ai_gateway.rate_limits.<key>.requests_per_minute` are parsed specially.
-- Example:
+Keys like the following are parsed specially and will create or update the corresponding rate limit entry in the endpoint config:
+
+#### User Rate Limit
 ```json
 "ai_gateway.rate_limits.user.requests_per_minute": {
   "type": "fixed",
-  "default": 100,
-  "error_message": "User rate limit must be 100"
+  "default": 0,
+  "error_message": "Rate limit is set to 0 (endpoint disabled)"
 }
 ```
-- This enforces that the `user` rate limit is set to 100 requests per minute.
+
+#### User Group Rate Limit
+```json
+"ai_gateway.rate_limits.user_group.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper.requests_per_minute": {
+  "type": "fixed",
+  "default": 0,
+  "error_message": "Rate limit is set to 0 (endpoint disabled)"
+}
+```
+
+#### Principal Rate Limit
+```json
+"ai_gateway.rate_limits.principal.uami_pepe.requests_per_minute": {
+  "type": "fixed",
+  "default": 0,
+  "error_message": "Rate limit is set to 0 (endpoint disabled)"
+}
+```
+
+These rules will ensure the corresponding rate limit entry is present in the endpoint configuration, with the correct `key` and `principal` fields as needed.
 
 ---
 
@@ -107,28 +135,34 @@ Each rule is a key-value pair under `rules`. The key uses dot notation to specif
 ---
 
 ## Full Example Policy
+
 ```json
 {
-  "policy_name": "strict-prod-policy",
-  "policy_version": "1.1",
-  "description": "Production endpoints must have strict rate limits",
+  "policy_name": "disabled-serving-policy",
+  "policy_version": "1.0",
+  "description": "Policy que deshabilita completamente el endpoint fijando el rate limit a 0",
   "applies_to": {
-    "serving_endpoint_name": ".*-prod$"
+    "serving_endpoint_name": "^databricks-.*"
   },
   "rules": {
     "ai_gateway.rate_limits": {
       "type": "required",
-      "error_message": "AI Gateway config required"
+      "error_message": "El AI Gateway debe estar presente aunque el endpoint esté deshabilitado"
     },
     "ai_gateway.rate_limits.user.requests_per_minute": {
       "type": "fixed",
-      "default": 100,
-      "error_message": "User rate limit must be 100"
+      "default": 0,
+      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"
     },
-    "ai_gateway.rate_limits.admin.requests_per_minute": {
+    "ai_gateway.rate_limits.user_group.AZ_DATAANALYTICSRDPRE_LKHSRD_Oper.requests_per_minute": {
       "type": "fixed",
-      "default": 1000,
-      "error_message": "Admin rate limit must be 1000"
+      "default": 0,
+      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"
+    },
+    "ai_gateway.rate_limits.principal.uami_pepe.requests_per_minute": {
+      "type": "fixed",
+      "default": 0,
+      "error_message": "El rate limit está fijado a 0 (endpoint deshabilitado)"
     }
   }
 }

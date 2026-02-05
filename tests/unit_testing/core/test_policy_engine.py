@@ -13,9 +13,10 @@ def engine():
         'field': 'requests_per_minute',
         'renewal_period': 'minute'
     }),
-    ("ai_gateway.rate_limits.admin.requests_per_hour", {
+    ("ai_gateway.rate_limits.user_group.admin.requests_per_hour", {
         'is_rate_limit': True,
-        'key_name': 'admin',
+        'key_name': 'user_group',
+        'principal': 'admin',
         'field': 'requests_per_hour',
         'renewal_period': 'hour'
     }),
@@ -88,7 +89,7 @@ def test_apply_policy_noncompliant_and_correction(engine):
 
 def test_apply_policy_missing_rate_limit_entry(engine):
     rules = {
-        'ai_gateway.rate_limits.admin.requests_per_minute': {
+        'ai_gateway.rate_limits.user_group.admin.requests_per_minute': {
             'type': 'fixed',
             'default': 10,
             'error_message': 'Admin rate limit must be 10'
