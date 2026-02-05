@@ -1,8 +1,10 @@
 """Filtering utilities for endpoints."""
+
 import re
 from typing import Dict, Any
 import pandas as pd
 import logging
+from custom_ai_gateway_policies.constants import SERVING_ENDPOINT_NAME, NAME
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +33,11 @@ def apply_to_filter(endpoints_df: pd.DataFrame, applies_to: Dict[str, str]) -> p
     filtered_df = endpoints_df.copy()
 
     # Handle serving_endpoint_name filter (regex on 'name' column)
-    if "serving_endpoint_name" in applies_to:
-        pattern = applies_to["serving_endpoint_name"]
+    if SERVING_ENDPOINT_NAME in applies_to:
+        pattern = applies_to[SERVING_ENDPOINT_NAME]
         logger.info(f"Applying name filter: {pattern}")
-
         try:
-            filtered_df = filtered_df[filtered_df["name"].str.match(pattern, na=False)]
+            filtered_df = filtered_df[filtered_df[NAME].str.match(pattern, na=False)]
             logger.info(f"Filter matched {len(filtered_df)} endpoints")
         except re.error as e:
             logger.error(f"Invalid regex pattern '{pattern}': {e}")
@@ -68,10 +69,9 @@ def matches_filter(endpoint: Dict[str, Any], applies_to: Dict[str, str]) -> bool
         return True
 
     # Check serving_endpoint_name filter
-    if "serving_endpoint_name" in applies_to:
-        pattern = applies_to["serving_endpoint_name"]
-        endpoint_name = endpoint.get("name", "")
-
+    if SERVING_ENDPOINT_NAME in applies_to:
+        pattern = applies_to[SERVING_ENDPOINT_NAME]
+        endpoint_name = endpoint.get(NAME, "")
         try:
             if not re.match(pattern, endpoint_name):
                 return False

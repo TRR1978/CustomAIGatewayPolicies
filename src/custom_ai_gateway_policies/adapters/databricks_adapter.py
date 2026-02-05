@@ -1,4 +1,5 @@
 """Adapter for Databricks Serving Endpoints API."""
+
 import logging
 import pandas as pd
 
@@ -8,6 +9,9 @@ from databricks.sdk.service.serving import (
     AiGatewayRateLimit,
     AiGatewayRateLimitRenewalPeriod,
     AiGatewayRateLimitKey
+)
+from custom_ai_gateway_policies.constants import (
+    KEY_AI_GATEWAY, KEY_RATE_LIMITS, KEY_CALLS, KEY_PRINCIPAL, KEY_RENEWAL_PERIOD, MINUTE, TOKENS, NAME, RECORDS
 )
 
 
@@ -90,7 +94,7 @@ class DatabricksEndpointAdapter:
         logger.info(f"Updating AI Gateway for endpoint: {endpoint_name}")
         try:
             # Extract rate_limits from corrected config
-            rate_limits_array = corrected_config.get("ai_gateway", {}).get("rate_limits", [])
+            rate_limits_array = corrected_config.get(KEY_AI_GATEWAY, {}).get(KEY_RATE_LIMITS, [])
 
             if not rate_limits_array:
                 raise ValueError(f"No rate_limits found in corrected_config for {endpoint_name}")
@@ -99,7 +103,7 @@ class DatabricksEndpointAdapter:
             rate_limit_objects = []
             for rl in rate_limits_array:
                 # Map renewal_period string to enum
-                renewal_period_str = rl.get("renewal_period", "minute").upper()
+                renewal_period_str = rl.get(KEY_RENEWAL_PERIOD, MINUTE).upper()
                 renewal_period = getattr(
                     AiGatewayRateLimitRenewalPeriod,
                     renewal_period_str,
@@ -107,7 +111,7 @@ class DatabricksEndpointAdapter:
                 )
 
                 # Map key string to enum
-                key_str = rl.get("key", "user").upper()
+                key_str = rl.get(NAME, "user").upper()
                 key_enum = getattr(
                     AiGatewayRateLimitKey,
                     key_str,
@@ -117,17 +121,15 @@ class DatabricksEndpointAdapter:
                 # Create rate limit object
                 # Support both 'calls' and 'tokens' limits
                 rate_limit_kwargs = {
-                    "renewal_period": renewal_period,
-                    "key": key_enum
+                    KEY_RENEWAL_PERIOD: renewal_period,
+                    KEY_PRINCIPAL: key_enum
                 }
-                
-                if "principal" in rl:
-                    rate_limit_kwargs["principal"] = rl["principal"]
-
-                if "calls" in rl:
-                    rate_limit_kwargs["calls"] = rl["calls"]
-                if "tokens" in rl:
-                    rate_limit_kwargs["tokens"] = rl["tokens"]
+                if KEY_PRINCIPAL in rl:
+                    rate_limit_kwargs[KEY_PRINCIPAL] = rl[KEY_PRINCIPAL]
+                if KEY_CALLS in rl:
+                    rate_limit_kwargs[KEY_CALLS] = rl[KEY_CALLS]
+                if TOKENS in rl:
+                    rate_limit_kwargs[TOKENS] = rl[TOKENS]
 
                 rate_limit_objects.append(AiGatewayRateLimit(**rate_limit_kwargs))
 
@@ -160,10 +162,10 @@ class DatabricksEndpointAdapter:
         all_endpoints = self.list_endpoints()
 
         # Apply filters (currently only supports name regex)
-        if "name" in filter_dict:
-            pattern = filter_dict["name"]
-            filtered = all_endpoints[all_endpoints["name"].str.match(pattern)]
+        if NAME in filter_dict:
+            pattern = filter_dict[NAME]
+            filtered = all_endpoints[all_endpoints[NAME].str.match(pattern)]
             logger.info(f"Filter matched {len(filtered)} endpoints")
-            return filtered.to_dict('records')
+            return filtered.to_dict(RECORDS)
 
-        return all_endpoints.to_dict('records')
+        return all_endpoints.to_dict(RECORDS)
