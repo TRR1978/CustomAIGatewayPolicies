@@ -1,11 +1,18 @@
-import pandas as pd
 from custom_ai_gateway_policies import PolicyManager
 
+print("Hello! This is a complex usage example of the AI Gateway Policy Manager.")
+print("Loading multiple policies from directory and applying to Databricks endpoints in dry mode...")
 manager = PolicyManager()
-policies = manager.load_policy_bulk("./example")
-results = manager.apply_policy_bulk( policies, dry_mode=True)
 
-report = manager.generate_report(results)
-report_df = pd.DataFrame(report)
+print("Loading all policies from './example' directory...")
+policies = manager.load_policies_bulk("./example")
 
-print(report_df)
+bulk_results = manager.apply_policies_bulk(policies, dry_mode=True)
+for res in bulk_results:     
+    print(f"Endpoint: {res.endpoint_name}, Compliant: {res.is_compliant}, Errors: {res.errors}")
+    
+    
+json_report = manager.get_compliance_report(bulk_results)
+print("\nCompliance report for filtered endpoints:")
+print(json_report)
+	

@@ -229,7 +229,7 @@ class PolicyManager:
         policies: List[Dict[str, Any]],
         filter_dict: Optional[Dict[str, str]] = None,
         dry_mode: bool = True
-    ) -> Dict[str, List[PolicyResult]]:
+    ) -> List[PolicyResult]:
         """
         Apply multiple policies to endpoints matching a filter.
 
@@ -241,11 +241,14 @@ class PolicyManager:
         Returns:
             Dict[str, List[PolicyResult]]: Dictionary mapping policy names to lists of PolicyResult objects.
         """
-        results = {}
+        results = []
         for policy in policies:
             policy_name = policy.get("policy_name", "unnamed")
             logger.info(f"Applying policy: {policy_name}")
-            results[policy_name] = self.apply_policy_bulk(policy, filter_dict=filter_dict, dry_mode=dry_mode)
+            results_policy = self.apply_policy_bulk(policy,
+                                                    filter_dict=filter_dict,
+                                                    dry_mode=dry_mode)
+            results.extend(results_policy)
 
         return results
 
