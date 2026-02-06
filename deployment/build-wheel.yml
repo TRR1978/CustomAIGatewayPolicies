@@ -9,8 +9,12 @@ steps:
       pipenv run python setup.py bdist_wheel
     displayName: 'Build wheel package'
 
-  - task: PublishBuildArtifacts@1
+  - task: CopyFiles@2
+    displayName: 'Copy Python'
     inputs:
-      PathtoPublish: 'dist'
-      ArtifactName: 'wheel'
-      publishLocation: 'Container'
+      Contents: |
+        **/*.whl
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish
