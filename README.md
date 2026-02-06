@@ -167,4 +167,26 @@ MIT License. See `LICENSE` for details.
 
 ---
 
+## Versioning
+The package version is managed via the `VERSION` file in the project root.
+- To update the version, edit the `VERSION` file (manual major/minor/patch).
+- The build id is appended automatically using the `BUILDID` environment variable (e.g., from Azure DevOps) or, if not set, the current date and time (YYMMDDHHMMSS).
+- Example:
+  - `VERSION` file: `1.2.3`
+  - `BUILDID` (from CI): `60206143015`
+  - Final version: `1.2.3.60206143015`
+- The resulting wheel will be named like:
+  - `custom_ai_gateway_policies-1.2.3.60206143015-py3-none-any.whl`
+
+To build the wheel:
+```sh
+pipenv run python setup.py bdist_wheel
+```
+
+The `__version__` attribute is available in your package as usual.
+
+For more details, see `setup.py` and `src/__init__.py`.
+
+---
+
 If you'd like, I can also generate a version with badges, a more formal tone, or a more concise style.
