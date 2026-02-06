@@ -1,24 +1,35 @@
 
-from setuptools import setup, find_packages
 import os
+from setuptools import setup, find_packages
+from datetime import datetime
+
 
 # Read manual major/minor version from VERSION file
 with open('VERSION', 'r') as f:
     manual_version = f.read().strip()
 
 # Use BUILDID env var (e.g. from Azure DevOps) or fallback to 'local'
-def get_combined_version():
+
+def get_dynamic_version():
     build_id = os.getenv('BUILDID')
     if build_id:
-        return f"{manual_version}.{build_id}"
-    # fallback: use date and time as build id if not set
-    from datetime import datetime
-    date_build = datetime.now().strftime('%y%m%d%H%M%S')
-    return f"{manual_version}.{date_build}"
-
+        parts = manual_version.split('.')
+        if len(parts) == 1:
+            # e.g. '1' -> '1.0.{build_id}'
+            return f"{parts[0]}.0.{build_id}"
+        elif len(parts) == 2:
+            # e.g. '1.1' -> '1.1.{build_id}'
+            return f"{parts[0]}.{parts[1]}.{build_id}"
+        else:
+            # e.g. '1.1.0' or more -> '1.1.{build_id}'
+            return f"{parts[0]}.{parts[1]}.{build_id}"
+    else:
+        return manual_version
+    
+ 
 setup(
     name="custom_ai_gateway_policies",
-    version=get_combined_version(),
+    version=get_dynamic_version(),
     description="Emulate Databricks cluster policies for model serving endpoints.",
     author="Tomas Romero",
     author_email="tomas.romero@gmail.com",
