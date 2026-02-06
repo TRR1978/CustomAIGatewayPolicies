@@ -1,54 +1,170 @@
-# CustomAIGatewayPolicies
+```
+ ██████╗██╗   ██╗███████╗████████╗ ██████╗ ███╗   ███╗                          
+██╔════╝██║   ██║██╔════╝╚══██╔══╝██╔═══██╗████╗ ████║                          
+██║     ██║   ██║███████╗   ██║   ██║   ██║██╔████╔██║                          
+██║     ██║   ██║╚════██║   ██║   ██║   ██║██║╚██╔╝██║                          
+╚██████╗╚██████╔╝███████║   ██║   ╚██████╔╝██║ ╚═╝ ██║                          
+ ╚═════╝ ╚═════╝ ╚══════╝   ╚═╝    ╚═════╝ ╚═╝     ╚═╝                          
+                                                                                
+ █████╗ ██╗     ██████╗  █████╗ ████████╗███████╗██╗    ██╗ █████╗ ██╗   ██╗    
+██╔══██╗██║    ██╔════╝ ██╔══██╗╚══██╔══╝██╔════╝██║    ██║██╔══██╗╚██╗ ██╔╝    
+███████║██║    ██║  ███╗███████║   ██║   █████╗  ██║ █╗ ██║███████║ ╚████╔╝     
+██╔══██║██║    ██║   ██║██╔══██║   ██║   ██╔══╝  ██║███╗██║██╔══██║  ╚██╔╝      
+██║  ██║██║    ╚██████╔╝██║  ██║   ██║   ███████╗╚███╔███╔╝██║  ██║   ██║       
+╚═╝  ╚═╝╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝       
+                                                                                
+██████╗  ██████╗ ██╗     ██╗ ██████╗██╗███████╗███████╗                         
+██╔══██╗██╔═══██╗██║     ██║██╔════╝██║██╔════╝██╔════╝                         
+██████╔╝██║   ██║██║     ██║██║     ██║█████╗  ███████╗                         
+██╔═══╝ ██║   ██║██║     ██║██║     ██║██╔══╝  ╚════██║                         
+██║     ╚██████╔╝███████╗██║╚██████╗██║███████╗███████║                         
+╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝╚═╝╚══════╝╚══════╝                         
+```
 
-Emulate Databricks cluster policies for model serving endpoints. This project provides a framework to define, enforce, and manage policies for Databricks model serving endpoints using the Databricks SDK.
+A framework that emulates Databricks cluster policies for model serving endpoints. This project enables defining, enforcing, and managing policies for Databricks model serving endpoints using the Databricks SDK.
+
+---
+
+## Table of Contents
+- [Development Environment Setup](#development-environment-setup)
+- [What's New](#whats-new)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Usage](#usage)
+- [Contributing](#contributing)
+- [Contributors](#contributors)
+- [License](#license)
+
+---
+
+## Development Environment Setup
+
+To ensure all developers work with a consistent environment and imports resolve correctly, follow these steps:
+
+### 1. Environment Variables
+- The `.env.example` file contains the recommended configuration (e.g., `PYTHONPATH=src`).
+- **Do not edit or commit `.env` to the repository.** Each developer should create their own local `.env` if needed.
+- To use the base configuration, copy the example file:
+
+**Linux/Mac**
+```sh
+cp .env.example .env
+```
+
+**Windows**
+```powershell
+copy .env.example .env
+```
+
+### 2. VS Code Setup (Optional but Recommended)
+You may create a `.vscode/settings.json` file with:
+```json
+{
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}/src"
+  },
+  "python.envFile": "${workspaceFolder}/.env"
+}
+```
+
+This ensures consistent import behavior in the editor without manually creating a `.env` file.
+
+### 3. pytest and Coverage
+- The `pytest.ini` file already includes:
+  ```
+  pythonpath = src
+  ```
+  so tests run correctly without extra configuration.
+- The project includes unit and coverage tests for all main modules, with additional files (suffix `_cov.py`) to ensure 100% coverage.
+- To run all tests and check coverage:
+  ```sh
+  pipenv run pytest --cov=src --cov-report=xml --cov-report=html --junitxml=test-output.xml
+  pipenv run coverage report --fail-under=100
+  ```
+- The CI pipeline enforces 100% coverage.
+
+### Summary
+- Use `.env.example` as a template for your local `.env`.
+- Never commit `.env` to the repository.
+- VS Code users can automate environment configuration via `.vscode/settings.json`.
+- Test coverage is 100% and maintained with dedicated coverage tests.
+- VS Code users can automate environment configuration via `.vscode/settings.json`.
+
+---
+
+## What's New
+- Added `dry_mode` parameter for safe policy evaluation and testing.
+- New `get_rules_by_prefix` method for flexible rule filtering.
+- Enhanced `details` attribute in `Endpoint` for richer metadata.
+- Improved JSON schema validation for policies and rules.
+
+---
 
 ## Features
-- Policy definition and enforcement for model serving endpoints
-- Integration with Databricks SDK
-- Extensible and configurable
+- Define and enforce policies for model serving endpoints.
+- Integrate seamlessly with the Databricks SDK.
+- Extensible and configurable architecture.
+- Dry‑run mode for safe policy evaluation.
+- Rule filtering by prefix (e.g., `ai_gateway.*`).
+- Rich endpoint metadata for advanced policy checks.
+
+---
 
 ## Getting Started
 
 ### Usage
 
-
-#### 1. Instala pipenv
-Si no tienes pipenv instalado:
+#### 1. Install pipenv
+If you don’t have pipenv installed:
 ```sh
 pip install pipenv
 ```
 
-#### 2. Instala las dependencias y crea el entorno virtual
-Desde la raíz del proyecto:
+#### 2. Install dependencies and create the virtual environment
+From the project root:
 ```sh
 pipenv install --dev
 ```
 
-#### 3. Activa el entorno virtual
+#### 3. Activate the virtual environment
 ```sh
 pipenv shell
 ```
 
-#### 4. Añade dependencias
-Para dependencias normales:
+#### 4. Add dependencies
+Regular dependencies:
 ```sh
-pipenv install <paquete>
-```
-Para dependencias de desarrollo:
-```sh
-pipenv install --dev <paquete>
+pipenv install <package>
 ```
 
-#### 5. Ejecuta los tests
+Development dependencies:
+```sh
+pipenv install --dev <package>
+```
+
+#### 5. Run tests
 ```sh
 pipenv run pytest
 ```
 
+For usage examples, see the `example/` directory.
+
 ---
-See the `example/` folder for usage examples.
 
 ## Contributing
-See `CONTRIBUTING.md` for guidelines.
+Refer to `CONTRIBUTING.md` for contribution guidelines.
+
+---
+
+## Contributors
+- GitHub Copilot (AI Assistant)  
+- Databricks Assistant (AI)
+
+---
 
 ## License
 MIT License. See `LICENSE` for details.
+
+---
+
+If you'd like, I can also generate a version with badges, a more formal tone, or a more concise style.

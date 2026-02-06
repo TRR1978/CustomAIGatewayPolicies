@@ -1,1 +1,4 @@
-# Este archivo indica que el paquete 'config' es un módulo Python.
+# (empty file)
+"""
+Configuration subpackage for AI Gateway Policy Manager.
+"""
