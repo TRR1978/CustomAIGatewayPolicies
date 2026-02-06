@@ -1,5 +1,10 @@
 # Template: Build wheel package
 steps:
+  - bash: |
+        echo "##vso[task.setvariable variable=BUILDID]$(Build.BuildId)"
+        echo "##vso[task.setvariable variable=BUILDNUMBER]$(Build.BuildNumber)"
+    displayName: create VERSION metadata
+
   - script: |
       pipenv run python setup.py bdist_wheel
     displayName: 'Build wheel package'
