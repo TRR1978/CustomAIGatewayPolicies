@@ -1,0 +1,13 @@
+{
+  "policy_name": "rate_limits-serving-policy",
+  "policy_version": "1.0",
+  "description": "Policy that requires all serving endpoints to define an AI Gateway rate limits configuration",
+  "applies_to": {
+  },
+  "rules": {
+    "ai_gateway.rate_limits": {
+      "type": "required",
+      "error_message": "A rate limits configuration is required for this endpoint"
+    }
+  }
+}

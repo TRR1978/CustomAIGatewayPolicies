@@ -1,0 +1,14 @@
+{
+  "policy_name": "fallback-serving-policy",
+  "policy_version": "1.0",
+  "description": "Policy that enforces the presence of a fallback configuration for all matching endpoints",
+  "applies_to": {
+    "serving_endpoint_name": "^oai-.*"
+  },
+  "rules": {
+    "ai_gateway.fallback_config": {
+      "type": "required",
+      "error_message": "A fallback configuration is required for this endpoint"
+    }
+  }
+}
