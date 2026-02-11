@@ -33,6 +33,24 @@ def test_parse_rate_limit_key(engine, policy_key, expected):
 def test_search_nested_key(engine, data, key, expected):
     assert engine.search_nested_key(data, key) == expected
 
+
+def test_set_nested_key_creates_path():
+    data = {}
+    result = PolicyEngine.set_nested_key(data, "a.b.c", 1)
+    assert result["a"]["b"]["c"] == 1
+
+
+def test_set_nested_key_overwrites_value():
+    data = {"a": {"b": {"c": 1}}}
+    result = PolicyEngine.set_nested_key(data, "a.b.c", 2)
+    assert result["a"]["b"]["c"] == 2
+
+
+def test_set_nested_key_overwrites_non_dict():
+    data = {"a": "not-a-dict"}
+    result = PolicyEngine.set_nested_key(data, "a.b", "x")
+    assert result["a"]["b"] == "x"
+
 def test_apply_policy_compliant(engine):
     rules = {
         'ai_gateway.rate_limits.user.requests_per_minute': {

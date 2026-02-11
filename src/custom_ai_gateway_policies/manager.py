@@ -148,6 +148,7 @@ class PolicyManager:
                     key="endpoint",
                     message=f"Failed to retrieve endpoint: {str(e)}"
                 )],
+                changes_made=False,
                 endpoint_name=endpoint_name,
                 policy_name=policy_name
             )
@@ -158,6 +159,7 @@ class PolicyManager:
                 is_compliant=True,
                 corrected_config=endpoint_config,
                 errors=[],
+                changes_made=False,
                 endpoint_name=endpoint_name,
                 policy_name=policy_name
             )
@@ -167,8 +169,8 @@ class PolicyManager:
         result = self.engine.apply_policy(policy_name, rules, endpoint_config)
         result.endpoint_name = endpoint_name
 
-        # Apply corrections if not in dry mode
-        if not dry_mode and not result.is_compliant:
+        # Apply corrections if not in dry mode and if there are changes to apply
+        if not dry_mode and result.changes_made and not result.is_compliant:
             logger.info(f"Applying corrections to endpoint {endpoint_name}")
             try:
                 self.adapter.update_ai_gateway(endpoint_name, result.corrected_config)
