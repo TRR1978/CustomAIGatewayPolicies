@@ -40,12 +40,14 @@ class PolicyResult:
         is_compliant (bool): Whether the endpoint is compliant with the policy.
         corrected_config (Dict[str, Any]): The corrected configuration.
         errors (List[ValidationError]): List of validation errors.
+        changes_made (bool): Whether corrected_config differs from the input config.
         policy_name (str): Name of the applied policy.
         endpoint_name (str): Name of the endpoint.
     """
     is_compliant: bool
     corrected_config: Dict[str, Any]
     errors: List[ValidationError]
+    changes_made: bool
     policy_name: str
     endpoint_name: str
 

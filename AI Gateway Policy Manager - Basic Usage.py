@@ -7,8 +7,8 @@ manager = PolicyManager()
 print("Loading policy from './example/ms_policy_databricks.json'...")
 policy = manager.load_policy("./example/ms_policy_databricks.json")
 
-print("Applying policy to endpoint 'databricks-claude-opus-4-5' in dry mode...")
-result = manager.apply_policy("databricks-claude-opus-4-5", policy, dry_mode=False)
+print("Applying policy to endpoint 'databricks-claude-sonnet-4-5' in dry mode...")
+result = manager.apply_policy("databricks-claude-sonnet-4-5", policy, dry_mode=False)
 
 print(f"Policy compliance result for endpoint {result.endpoint_name}:")
 print(f"Is compliant: {result.is_compliant}")

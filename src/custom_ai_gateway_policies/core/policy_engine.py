@@ -2,6 +2,7 @@
 
 
 from typing import Dict, Tuple, Any, List
+import copy
 import logging
 
 from custom_ai_gateway_policies.domains.result import PolicyResult, ValidationError
@@ -81,6 +82,27 @@ class PolicyEngine:
             return True, current[keys[-1]]
         return False, None
 
+    @staticmethod
+    def set_nested_key(data: Dict[str, Any], key: str, value: Any) -> Dict[str, Any]:
+        """
+        Set a nested key in a dictionary using dot notation.
+
+        Args:
+            data (Dict[str, Any]): Dictionary to modify
+            key (str): Key in dot notation (e.g., 'config.rate_limit')
+            value (Any): Value to set
+        Returns:
+            Dict[str, Any]: Updated dictionary
+        """
+        keys = key.split(".")
+        current = data
+        for k in keys[:-1]:
+            if k not in current or not isinstance(current[k], dict):
+                current[k] = {}
+            current = current[k]
+        current[keys[-1]] = value
+        return data
+
     def apply_policy(
         self,
         policy_name: str,
@@ -112,7 +134,8 @@ class PolicyEngine:
         endpoint_name = endpoint_config.get(NAME)
 
         errors: List[ValidationError] = []
-        corrected_config = endpoint_config.copy()
+        original_config = copy.deepcopy(endpoint_config)
+        corrected_config = copy.deepcopy(endpoint_config)
 
         logger.info(f"Applying {len(policy_rules)} policy rules")
 
@@ -134,10 +157,13 @@ class PolicyEngine:
         is_compliant = len(errors) == 0
         logger.info(f"Policy application complete. Compliant: {is_compliant}, Errors: {len(errors)}")
 
+        changes_made = corrected_config != original_config
+
         return PolicyResult(
             is_compliant=is_compliant,
             corrected_config=corrected_config,
             errors=errors,
+            changes_made=changes_made,
             endpoint_name=endpoint_name,
             policy_name=policy_name
         )
@@ -260,7 +286,7 @@ class PolicyEngine:
             error_message (str): Error message to use
             parsed (Dict[str, Any]): Parsed key info
             corrected_config (Dict[str, Any]): Config to correct
-            errors (List[ValidationError]): List to append errors to
+            errors (List['ValidationError']): List to append errors to results
         """
         key_name = parsed.get(KEY_NAME)
         principal = parsed.get(KEY_PRINCIPAL)
@@ -315,7 +341,8 @@ class PolicyEngine:
                     found=current_value
                 ))
                 # Always update the calls value in the array
-                corrected_config[KEY_AI_GATEWAY][KEY_RATE_LIMITS][limit_index][KEY_CALLS] = default
+                if rule_type == TYPE_FIXED:
+                    corrected_config[KEY_AI_GATEWAY][KEY_RATE_LIMITS][limit_index][KEY_CALLS] = default
 
     def _apply_generic_rule(
         self,
@@ -359,3 +386,4 @@ class PolicyEngine:
                     expected=default,
                     found=value
                 ))
+                corrected_config = self.set_nested_key(corrected_config, policy_key, default)
