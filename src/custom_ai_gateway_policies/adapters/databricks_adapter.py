@@ -11,7 +11,8 @@ from databricks.sdk.service.serving import (
     AiGatewayRateLimitKey
 )
 from custom_ai_gateway_policies.constants import (
-    KEY_AI_GATEWAY, KEY_RATE_LIMITS, KEY_CALLS, KEY_PRINCIPAL, KEY_RENEWAL_PERIOD, MINUTE, TOKENS, NAME, RECORDS
+    KEY_AI_GATEWAY, KEY_RATE_LIMITS, KEY_CALLS, KEY_PRINCIPAL, KEY_KEY,
+    KEY_RENEWAL_PERIOD, MINUTE, TOKENS, NAME, RECORDS
 )
 
 
@@ -122,7 +123,7 @@ class DatabricksEndpointAdapter:
                 # Support both 'calls' and 'tokens' limits
                 rate_limit_kwargs = {
                     KEY_RENEWAL_PERIOD: renewal_period,
-                    KEY_PRINCIPAL: key_enum
+                    KEY_KEY: key_enum
                 }
                 if KEY_PRINCIPAL in rl:
                     rate_limit_kwargs[KEY_PRINCIPAL] = rl[KEY_PRINCIPAL]

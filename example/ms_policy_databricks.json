@@ -1,0 +1,22 @@
+{
+  "policy_name": "disable-databricks-serving-policy",
+  "policy_version": "1.0",
+  "description": "Policy that completely disables the endpoint by setting the rate limit to 0",
+  "applies_to": {
+    "serving_endpoint_name": "^databricks-.*"
+  },
+  "rules": {
+    "ai_gateway.rate_limits.user.requests_per_minute": {
+      "type": "fixed",
+      "default": 0,
+      "error_message": "Rate limit is set to 0 (endpoint disabled)"
+    },
+    "ai_gateway.usage_tracking_config": {
+      "type": "fixed",
+      "default": {
+        "enabled": true
+      },
+      "error_message": "Usage tracking must be enabled for this endpoint"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "policy_name": "guardrails-serving-policy",
+  "policy_version": "1.0",
+  "description": "Policy that enforces the presence of a guardrails configuration for all matching endpoints",
+  "applies_to": {
+    "serving_endpoint_name": "^genai_.*"
+  },
+  "rules": {
+    "ai_gateway.guardrails": {
+      "type": "required",
+      "error_message": "A guardrails configuration is required for this endpoint"
+    }
+  }
+}

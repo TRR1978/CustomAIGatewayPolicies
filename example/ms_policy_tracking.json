@@ -1,0 +1,12 @@
+{
+  "policy_name": "tracking-serving-policy",
+  "policy_version": "1.0",
+  "description": "Policy that enforces usage tracking to be enabled for all serving endpoints",
+  "applies_to": {
+  },
+  "rules": {
+    "ai_gateway.usage_tracking_config": {
+      "type": "required"
+    }
+  }
+}
