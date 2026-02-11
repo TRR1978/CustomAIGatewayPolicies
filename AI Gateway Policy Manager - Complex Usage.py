@@ -10,7 +10,7 @@ policies = manager.load_policies_bulk("./example")
 
 bulk_results = manager.apply_policies_bulk(policies, dry_mode=True)
 for res in bulk_results:     
-    print(f"Policy: {res.policy_name} Endpoint: {res.endpoint_name}, Compliant: {res.is_compliant}, Errors: {res.errors}")
+    print(f"Policy: {res.policy_name} Endpoint: {res.endpoint_name}, Compliant: {res.is_compliant}, Errors: {res.errors}, Changes made: {res.changes_made}")
     
 results_df = pd.DataFrame(bulk_results)
 print("\nResults as DataFrame:")

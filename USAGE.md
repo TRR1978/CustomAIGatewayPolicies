@@ -201,6 +201,7 @@ if not result.is_compliant:
         print(f"- {err.key}: {err.message}")
 else:
     print("Endpoint is compliant with the policy")
+print(f"Changes made: {result.changes_made}")
 ```
 
 ### Apply a Policy to Multiple Endpoints (Bulk)
@@ -213,6 +214,7 @@ for res in bulk_results:
     if not res.is_compliant:
         for err in res.errors:
             print(f"  - {err.key}: {err.message}")
+    print(f"  Changes made: {res.changes_made}")
 ```
 
 ### Apply Real Corrections (Not Dry-Run)
@@ -223,6 +225,8 @@ result = manager.apply_policy("my-endpoint", policy, dry_mode=False)
 # Or in bulk mode:
 bulk_results = manager.apply_policy_bulk(policy, dry_mode=False)
 ```
+
+Note: In v0.2.0+, `changes_made` indicates whether corrections actually changed the config.
 
 ### Generate a Compliance Report
 
