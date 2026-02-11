@@ -93,6 +93,9 @@ This ensures consistent import behavior in the editor without manually creating 
 ---
 
 ## What's New
+- **v0.2.0**: Added `changes_made` in `PolicyResult` to indicate when corrections modify config.
+- **v0.2.0**: AI Gateway updates now support `fallback_config` and `usage_tracking_config`.
+- **v0.2.0**: Update flow can skip changes when configuration is already up to date.
 - Added `dry_mode` parameter for safe policy evaluation and testing.
 - New `get_rules_by_prefix` method for flexible rule filtering.
 - Enhanced `details` attribute in `Endpoint` for richer metadata.
@@ -105,6 +108,8 @@ This ensures consistent import behavior in the editor without manually creating 
 - Integrate seamlessly with the Databricks SDK.
 - Extensible and configurable architecture.
 - Dry‑run mode for safe policy evaluation.
+- `changes_made` flag in results for safer updates.
+- AI Gateway fallback and usage tracking config support.
 - Rule filtering by prefix (e.g., `ai_gateway.*`).
 - Rich endpoint metadata for advanced policy checks.
 
