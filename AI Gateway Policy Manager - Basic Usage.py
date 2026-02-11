@@ -16,3 +16,11 @@ print(f"Errors: {result.errors}")
 print(f"Corrected config (if any): {result.corrected_config}")
 print(f"Policy name: {result.policy_name}")    
 
+bulk_results = manager.apply_policy_bulk(policy, filter_dict={"name": "^databricks-.*"}, dry_mode=True)
+for res in bulk_results:     
+    print(f"Policy: {res.policy_name} Endpoint: {res.endpoint_name}, Compliant: {res.is_compliant}, Errors: {res.errors}")
+    
+    
+json_report = manager.get_compliance_report(bulk_results)
+print("\nCompliance report for filtered endpoints:")
+print(json_report)   
