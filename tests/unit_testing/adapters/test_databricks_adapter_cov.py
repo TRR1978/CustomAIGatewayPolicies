@@ -15,8 +15,10 @@ def test_get_serving_endpoint_details_exception():
 def test_update_ai_gateway_no_rate_limits():
     adapter = DatabricksEndpointAdapter(workspace_client=DummyW())
     config = {'ai_gateway': {}}
-    with pytest.raises(ValueError):
-        adapter.update_ai_gateway('foo', config)
+    # Should not raise, and should not call put_ai_gateway
+    adapter.w.serving_endpoints.put_ai_gateway.reset_mock()
+    adapter.update_ai_gateway('foo', config)
+    adapter.w.serving_endpoints.put_ai_gateway.assert_not_called()
 
 def test_update_ai_gateway_exception():
     adapter = DatabricksEndpointAdapter(workspace_client=DummyW())

@@ -26,6 +26,8 @@ RULE_ERROR_MESSAGE = "error_message"
 # === Rate Limit Keys ===
 KEY_AI_GATEWAY = "ai_gateway"
 KEY_RATE_LIMITS = "rate_limits"
+KEY_FALLBACK_CONFIG = "fallback_config"
+KEY_USAGE_TRACKING_CONFIG = "usage_tracking_config"
 KEY_KEY = "key"
 KEY_USER = "user"
 KEY_USER_GROUP = "user_group"
@@ -40,6 +42,7 @@ IS_RATE_LIMIT = "is_rate_limit"
 RENEWAL_PERIOD = "renewal_period"
 PRINCIPAL = "principal"
 REQUESTS_PER_PREFIX = "requests_per_"
+ENABLED = "enabled"
 
 # === Common String Values ===
 MINUTE = "minute"
