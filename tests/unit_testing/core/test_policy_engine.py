@@ -13,6 +13,13 @@ def engine():
         'field': 'requests_per_minute',
         'renewal_period': 'minute'
     }),
+    ("ai_gateway.rate_limits.principal.alice.requests_per_minute", {
+        'is_rate_limit': True,
+        'key_name': 'principal',
+        'principal': 'alice',
+        'field': 'requests_per_minute',
+        'renewal_period': 'minute'
+    }),
     ("ai_gateway.rate_limits.user_group.admin.requests_per_hour", {
         'is_rate_limit': True,
         'key_name': 'user_group',
@@ -191,3 +198,94 @@ def test_apply_policy_regex_no_match(engine):
     assert len(result.errors) == 1
     assert result.errors[0].expected == '^databricks-.*'
     assert result.errors[0].found == 'other-foo'
+
+
+def test_apply_policy_regex_missing_name(engine):
+    rules = {
+        'serving_endpoint_name': {
+            'type': 'regex',
+            'pattern': '^databricks-.*',
+            'error_message': 'Invalid endpoint name'
+        }
+    }
+    result = engine.apply_policy('test_policy', rules, {})
+    assert not result.is_compliant
+    assert len(result.errors) == 1
+    assert 'key missing' in result.errors[0].message
+
+
+def test_apply_policy_regex_invalid_pattern(engine):
+    rules = {
+        'serving_endpoint_name': {
+            'type': 'regex',
+            'pattern': '(',
+            'error_message': 'Invalid endpoint name'
+        }
+    }
+    config = {'name': 'databricks-foo'}
+    result = engine.apply_policy('test_policy', rules, config)
+    assert not result.is_compliant
+    assert len(result.errors) == 1
+    assert 'Invalid regex pattern' in result.errors[0].message
+
+
+def test_apply_policy_required_rate_limit_missing_ai_gateway(engine):
+    rules = {
+        'ai_gateway.rate_limits.user.requests_per_minute': {
+            'type': 'required',
+            'default': 100,
+            'error_message': 'AI Gateway must exist'
+        }
+    }
+    result = engine.apply_policy('test_policy', rules, {})
+    assert not result.is_compliant
+    assert len(result.errors) == 1
+    assert 'ai_gateway missing' in result.errors[0].message
+
+
+def test_apply_policy_required_rate_limit_missing_list(engine):
+    rules = {
+        'ai_gateway.rate_limits.user.requests_per_minute': {
+            'type': 'required',
+            'default': 100,
+            'error_message': 'Rate limits must exist'
+        }
+    }
+    result = engine.apply_policy('test_policy', rules, {'ai_gateway': {}})
+    assert not result.is_compliant
+    assert len(result.errors) == 1
+    assert 'rate_limits missing' in result.errors[0].message
+
+
+def test_apply_policy_fixed_rate_limit_missing_list_creates_entry(engine):
+    rules = {
+        'ai_gateway.rate_limits.user.requests_per_minute': {
+            'type': 'fixed',
+            'default': 42,
+            'error_message': 'Rate limit must be 42'
+        }
+    }
+    result = engine.apply_policy('test_policy', rules, {'ai_gateway': {}})
+    assert not result.is_compliant
+    rate_limits = result.corrected_config['ai_gateway']['rate_limits']
+    assert rate_limits and rate_limits[0]['calls'] == 42
+
+
+def test_apply_policy_principal_rate_limit_updates(engine):
+    rules = {
+        'ai_gateway.rate_limits.principal.alice.requests_per_minute': {
+            'type': 'fixed',
+            'default': 5,
+            'error_message': 'Principal rate limit must be 5'
+        }
+    }
+    config = {
+        'ai_gateway': {
+            'rate_limits': [
+                {'principal': 'alice', 'calls': 10, 'renewal_period': 'minute'}
+            ]
+        }
+    }
+    result = engine.apply_policy('test_policy', rules, config)
+    assert not result.is_compliant
+    assert result.corrected_config['ai_gateway']['rate_limits'][0]['calls'] == 5
