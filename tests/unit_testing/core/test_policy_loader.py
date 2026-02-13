@@ -58,6 +58,17 @@ def test_validate_policy_structure_fixed_missing_default():
     with pytest.raises(ValueError):
         validate_policy_structure(policy)
 
+
+def test_validate_policy_structure_regex_missing_pattern():
+    policy = {"policy_name": "p", "policy_version": "1.0", "rules": {"r": {"type": "regex"}}}
+    with pytest.raises(ValueError):
+        validate_policy_structure(policy)
+
+
+def test_validate_policy_structure_regex_valid():
+    policy = {"policy_name": "p", "policy_version": "1.0", "rules": {"r": {"type": "regex", "pattern": "^test"}}}
+    assert validate_policy_structure(policy)
+
 def test_check_policy_duplicate():
     from custom_ai_gateway_policies.core.policy_loader import check_policy_duplicate
     # No duplicates

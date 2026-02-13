@@ -1,0 +1,12 @@
+{
+  "policy_name": "naming-governance-flexible-policy",
+  "policy_version": "1.0",
+  "description": "Policy that enforces the [platform]-[vendor]-[model] naming convention for all serving endpoints",
+  "rules": {
+    "serving_endpoint_name": {
+      "type": "regex",
+      "pattern": "^[a-z0-9]+-[a-z0-9]+-[a-z0-9\\-]+$",
+      "error_message": "Invalid endpoint name. It must follow the governance structure: [platform]-[vendor]-[model] (e.g., databricks-oai-gpt-4o)"
+    }
+  }
+}

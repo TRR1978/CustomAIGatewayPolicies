@@ -22,6 +22,7 @@ REQUIRED_POLICY_FIELDS = [POLICY_NAME, POLICY_VERSION, RULES]
 RULE_TYPE = "type"
 RULE_DEFAULT = "default"
 RULE_ERROR_MESSAGE = "error_message"
+RULE_PATTERN = "pattern"
 
 # === Rate Limit Keys ===
 KEY_AI_GATEWAY = "ai_gateway"
@@ -50,7 +51,8 @@ MINUTE = "minute"
 # === Common Types ===
 TYPE_REQUIRED = "required"
 TYPE_FIXED = "fixed"
+TYPE_REGEX = "regex"
 
-TYPE_VALUES = [TYPE_REQUIRED, TYPE_FIXED]
+TYPE_VALUES = [TYPE_REQUIRED, TYPE_FIXED, TYPE_REGEX]
 
 # === Other common strings can be added as needed ===

@@ -7,8 +7,8 @@ import logging
 
 from custom_ai_gateway_policies.constants import (
     REQUIRED_POLICY_FIELDS, RULES, POLICY_NAME,
-    TYPE_VALUES, TYPE_FIXED,
-    RULE_TYPE, RULE_DEFAULT
+    TYPE_VALUES, TYPE_FIXED, TYPE_REGEX,
+    RULE_TYPE, RULE_DEFAULT, RULE_PATTERN
 )
 
 logger = logging.getLogger(__name__)
@@ -80,6 +80,9 @@ def validate_policy_structure(policy: Dict[str, Any]) -> bool:
 
         if rule[RULE_TYPE] == TYPE_FIXED and RULE_DEFAULT not in rule:
             raise ValueError(f"Rule '{key}' with type '{TYPE_FIXED}' must have '{RULE_DEFAULT}' field")
+
+        if rule[RULE_TYPE] == TYPE_REGEX and RULE_PATTERN not in rule:
+            raise ValueError(f"Rule '{key}' with type '{TYPE_REGEX}' must have '{RULE_PATTERN}' field")
 
     logger.info(f"Policy structure validated: {policy[POLICY_NAME]}")
     return True
