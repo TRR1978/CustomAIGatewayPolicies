@@ -2,6 +2,7 @@
 
 
 from typing import Dict, Tuple, Any, List
+import re
 import copy
 import logging
 
@@ -9,7 +10,8 @@ from custom_ai_gateway_policies.domains.result import PolicyResult, ValidationEr
 from custom_ai_gateway_policies.constants import (
     RULE_TYPE, RULE_DEFAULT, RULE_ERROR_MESSAGE, NAME,
     KEY_AI_GATEWAY, KEY_RATE_LIMITS, KEY_USER, KEY_USER_GROUP, KEY_PRINCIPAL, KEY_CALLS, KEY_RENEWAL_PERIOD,
-    TYPE_REQUIRED, TYPE_FIXED, FIELD, KEY_NAME, IS_RATE_LIMIT, REQUESTS_PER_PREFIX, MINUTE, KEY_KEY
+    TYPE_REQUIRED, TYPE_FIXED, TYPE_REGEX, FIELD, KEY_NAME, IS_RATE_LIMIT, REQUESTS_PER_PREFIX, MINUTE, KEY_KEY,
+    RULE_PATTERN, SERVING_ENDPOINT_NAME
 )
 
 logger = logging.getLogger(__name__)
@@ -186,6 +188,7 @@ class PolicyEngine:
         """
         rule_type = rule.get(RULE_TYPE)
         default = rule.get(RULE_DEFAULT)
+        pattern = rule.get(RULE_PATTERN)
         error_message = rule.get(RULE_ERROR_MESSAGE, f"Policy violation for {policy_key}")
 
         parsed = self.parse_rate_limit_key(policy_key)
@@ -205,6 +208,7 @@ class PolicyEngine:
                 policy_key=policy_key,
                 rule_type=rule_type,
                 default=default,
+                pattern=pattern,
                 error_message=error_message,
                 corrected_config=corrected_config,
                 errors=errors
@@ -349,6 +353,7 @@ class PolicyEngine:
         policy_key: str,
         rule_type: str,
         default: Any,
+        pattern: Any,
         error_message: str,
         corrected_config: Dict[str, Any],
         errors: List['ValidationError']
@@ -387,3 +392,27 @@ class PolicyEngine:
                     found=value
                 ))
                 corrected_config = self.set_nested_key(corrected_config, policy_key, default)
+
+        elif rule_type == TYPE_REGEX:
+            if policy_key == SERVING_ENDPOINT_NAME:
+                value = corrected_config.get(NAME) or corrected_config.get(SERVING_ENDPOINT_NAME)
+                exists = value is not None
+            if not exists:
+                errors.append(ValidationError(
+                    key=policy_key,
+                    message=f"{error_message} (key missing)"
+                ))
+                return
+            try:
+                if not re.match(pattern, str(value)):
+                    errors.append(ValidationError(
+                        key=policy_key,
+                        message=error_message,
+                        expected=pattern,
+                        found=value
+                    ))
+            except re.error as e:
+                errors.append(ValidationError(
+                    key=policy_key,
+                    message=f"Invalid regex pattern: {e}"
+                ))

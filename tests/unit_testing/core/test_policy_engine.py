@@ -161,3 +161,33 @@ def test_apply_policy_result_fields(engine):
     result = engine.apply_policy(policy_name, rules, config)
     assert result.policy_name == policy_name
     assert result.endpoint_name == 'endpoint1'
+
+
+def test_apply_policy_regex_match(engine):
+    rules = {
+        'serving_endpoint_name': {
+            'type': 'regex',
+            'pattern': '^databricks-.*',
+            'error_message': 'Invalid endpoint name'
+        }
+    }
+    config = {'name': 'databricks-foo'}
+    result = engine.apply_policy('test_policy', rules, config)
+    assert result.is_compliant
+    assert result.errors == []
+
+
+def test_apply_policy_regex_no_match(engine):
+    rules = {
+        'serving_endpoint_name': {
+            'type': 'regex',
+            'pattern': '^databricks-.*',
+            'error_message': 'Invalid endpoint name'
+        }
+    }
+    config = {'name': 'other-foo'}
+    result = engine.apply_policy('test_policy', rules, config)
+    assert not result.is_compliant
+    assert len(result.errors) == 1
+    assert result.errors[0].expected == '^databricks-.*'
+    assert result.errors[0].found == 'other-foo'

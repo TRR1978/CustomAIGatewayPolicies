@@ -84,8 +84,20 @@ Each rule is a key-value pair under `rules`. The key uses dot notation to specif
 ```
 - Ensures the value is exactly as specified by `default`. If not, it will be corrected.
 
+### 3. Regex Rule (Config Validation)
+```json
+"serving_endpoint_name": {
+  "type": "regex",
+  "pattern": "^databricks-.*",
+  "error_message": "Invalid endpoint name"
+}
+```
+- Validates the target value against a regex pattern.
+- `serving_endpoint_name` targets the endpoint name (matches `config.name`).
+- Regex rules validate only; they do not modify configuration.
 
-### 3. Rate Limit Rules
+
+### 4. Rate Limit Rules
 Keys like the following are parsed specially and will create or update the corresponding rate limit entry in the endpoint config:
 
 #### User Rate Limit

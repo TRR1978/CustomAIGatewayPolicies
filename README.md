@@ -93,6 +93,8 @@ This ensures consistent import behavior in the editor without manually creating 
 ---
 
 ## What's New
+- **v0.3.0**: Added regex rule type support (e.g., validate `serving_endpoint_name` against a pattern).
+- **v0.3.0**: Added `RULE_PATTERN`/`TYPE_REGEX` constants for consistent rule definitions.
 - **v0.2.0**: Added `changes_made` in `PolicyResult` to indicate when corrections modify config.
 - **v0.2.0**: AI Gateway updates now support `fallback_config` and `usage_tracking_config`.
 - **v0.2.0**: Update flow can skip changes when configuration is already up to date.
@@ -108,6 +110,7 @@ This ensures consistent import behavior in the editor without manually creating 
 - Integrate seamlessly with the Databricks SDK.
 - Extensible and configurable architecture.
 - Dry‑run mode for safe policy evaluation.
+- Regex rule type for validating endpoint name policies.
 - `changes_made` flag in results for safer updates.
 - AI Gateway fallback and usage tracking config support.
 - Rule filtering by prefix (e.g., `ai_gateway.*`).
@@ -191,6 +194,9 @@ pipenv run python setup.py bdist_wheel
 The `__version__` attribute is available in your package as usual.
 
 For more details, see `setup.py` and `src/__init__.py`.
+
+## Changelog
+See `CHANGELOG.md` for release notes by version.
 
 ---
 
